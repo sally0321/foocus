@@ -1,0 +1,444 @@
+QMainWindow{
+    background-color: #ffffff;
+}
+
+#sidebar{
+    background-color: #037f8c;
+}
+
+#sidebar QPushButton{
+    padding: 10px;
+    background-color: #037f8c;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    color: #ffffff; 
+    font-size: 16px;
+    text-align: left;
+}
+
+#sidebar QPushButton:hover{
+    background-color: #005163; 
+}
+
+#sidebar QPushButton:pressed{
+    background-color: #015c6a; 
+}
+
+#log_in_btn, #sign_in_btn{
+    width: 250px;
+    padding: 10px;
+    background-color: #005163;
+    border: 3px solid #f1efe7;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 15px;
+}
+
+#log_in_btn:hover, #sign_in_btn:hover{
+    border: 3px solid #005163;
+}
+
+#create_acc_btn, #back_to_log_in_btn{
+    width: 250px;
+    padding: 10px;
+    background-color: #f1efe7;
+    border: 3px solid #005163;
+    border-radius: 20px;
+    color: #005163;
+    font-size: 15px;
+}
+
+#create_acc_btn:hover, #back_to_log_in_btn:hover{
+    border: 3px solid #f1efe7;
+}
+
+#log_in_error_message_label, #sign_in_error_message_label{
+    color: darkred;
+}
+
+#log_in_username_input, #log_in_password_input, #sign_in_username_input, #sign_in_password_input, #sign_in_password_confirmation_input{
+    width: 600px;
+    height: 30px;
+    padding: 4px;
+    background-color: #ffffff;
+    border: none;
+    border-bottom: 1px solid gray;
+    color: #005163;
+    font-size: 15px;
+}
+
+#log_in_username_input:focus, #log_in_password_input:focus, #sign_in_username_input:focus, #sign_in_password_input:focus, #sign_in_password_confirmation_input:focus{
+    background-color: #f1efe7;
+    border: none;
+    border-bottom: 1px solid #04bfbf;
+}
+
+#sign_in_message_label, #log_in_message_label{
+    height: 15px;
+    color: black;
+}
+
+#timer{
+    min-height: 250px;
+    max-height: 500px;
+    background-color: #93dbe0;
+}
+
+#timer QLabel{
+    color: #005163;
+    font-size: 50px;
+}
+
+#timer QPushButton{
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background-color: #04bfbf;
+    border-radius: 20px;
+    text-align: center;   
+}
+
+#timer QPushButton:hover{
+    background-color: #037f8c;
+}
+
+#timer QPushButton:pressed{
+    background-color: #015c6a;
+}
+
+#timer #time_selector QSpinBox{
+    width: 100px;
+    height: 27px;
+    padding: 8px 8px;
+    background-color: #f1efe7;
+    border: 2px solid #93dbe0;
+    border-radius: 5px;
+    color: #04bfbf;
+    font-size: 16px;
+    selection-background-color: transparent;
+    selection-color: #04bfbf;
+}
+
+#timer #time_selector QSpinBox:focus{
+    border: 2px solid #04bfbf;
+}   
+
+#timer #time_selector QSpinBox::up-button, QSpinBox::down-button{
+    width: 18px;
+    height: 18px;
+    margin: 3px 3px;
+    background-color: #93dbe0;
+    border: none;
+    border-radius: 3px;
+}
+
+#timer #time_selector QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+    background-color: #04bfbf; 
+}
+
+#timer #time_selector QSpinBox::up-button:pressed, QSpinBox::down-button:pressed {
+    background-color: #037f8c;
+}
+
+#timer #time_selector QSpinBox::up-arrow {
+    image: url(resources/icons/up_arrow_icon.png);  
+    width: 12px;
+    height: 12px;
+}
+
+#timer #time_selector QSpinBox::down-arrow {
+    image: url(resources/icons/down_arrow_icon.png);  
+    width: 12px;
+    height: 12px;
+}
+
+#camera_feed{
+    background-color: #f1efe7;
+}
+
+#camera_feed QLabel{
+    color: #015c6a;
+    font-size: 18px;
+}
+
+#camera_feed QPushButton{
+    width: 120px;
+    height: 33px;
+    background-color: #037f8c;
+    border: none;
+    border-radius: 5px;
+    font-size: 15px;
+}
+
+#camera_feed QPushButton:hover{
+    background-color: #005163; 
+    border: none;
+    border-radius: 5px;
+}
+
+#camera_feed QPushButton:pressed{
+    background-color: #015c6a; 
+    border: none;
+    border-radius: 5px;
+}
+
+#focus_zone_top_widget{
+    max-height: 500px;
+    background-color: #f1efe7;
+}
+
+#focus_tracker_widget{
+    max-height: 250px;
+    max-width: 1000px;
+}
+
+#attention_span_history, #avg_attention_span, #longest_attention_span, #unfocus_frequency{
+    background-color: #f1efe7;
+}
+
+#attention_span_history{
+    min-height: 350px;
+    max-height: 350px;
+    border-radius: 20px;
+    padding: 15px 15px;
+}
+
+#avg_attention_span, #longest_attention_span{
+    min-height: 350px;
+    max-height: 350px;
+    min-width: 350px;
+    max-width: 350px;
+    border-radius: 20px;
+}
+
+#avg_attention_span_h1, #longest_attention_span_h1, #unfocus_frequency_h1{
+    color:#005163;
+    font-weight: 900;
+    font-size: 45px;
+}
+
+#avg_attention_span_h2, #longest_attention_span_h2, #unfocus_frequency_h2{
+    color: #005163;
+    font-weight: 700;
+    font-size: 30px;
+}
+
+#avg_attention_span_stat, #longest_attention_span_stat{
+    color: #04bfbf;
+    font-weight: 900;
+    font-size: 150px
+}
+
+#avg_attention_span_h3, #longest_attention_span_h3{
+    color: #037f8c;
+    font-weight: 600;
+    font-size: 24px;
+}
+
+#unfocus_frequency{
+    min-width: 350px;
+    max-width: 350px;
+    border-radius: 20px;
+}
+
+#unfocus_frequency_highest_widget, #unfocus_frequency_lowest_widget{
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 250px;
+    max-height: 250px;
+    background-color: #015c6a;
+    border-radius: 20px;
+}
+
+#unfocus_frequency_highest_h3, #unfocus_frequency_lowest_h3{
+    color: #93dbe0;
+    font-weight: 600;
+    font-size: 24px;
+}
+
+#unfocus_frequency_highest_stat, #unfocus_frequency_lowest_stat{
+    color: white;
+    font-weight: 900;
+    font-size: 150px;
+}
+
+#foocus_monster{
+    background-color: #93dbe0;
+}
+
+#foocus_mouth{
+    background-color: #04bfbf;
+}
+
+#foocus_eyes{
+    background-color: rgba(0, 0, 0, 0);
+}
+
+#total_focus_duration, #longest_focus_streak{
+    background-color: #f1efe7;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+#total_focus_duration_h1, #longest_focus_streak_h1{
+    color:#005163;
+    font-weight: 900;
+    font-size: 33px;
+}
+
+#total_focus_duration_h2, #longest_focus_streak_h2{
+    color: #005163;
+    font-weight: 700;
+    font-size: 21px;
+}
+
+#total_focus_duration_stat, #longest_focus_streak_stat{
+    color: #04bfbf;
+    font-weight: 800;
+    font-size: 120px
+}
+
+#total_focus_duration_h3, #longest_focus_streak_h3{
+    color: #037f8c;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+#btn_widget{
+    min-height: 100px;
+    max-height: 100px;
+}
+
+#focus_now_btn{
+    min-height: 100px;
+    background-color: rgba(0, 0, 0, 0);
+    color: black;
+    font-weight: 600;
+    font-size: 33px;
+}
+
+#focus_now_btn:hover{
+    background-color: #f1efe7;
+}
+
+QLabel[role="activity_selection_page_title"], QLabel[role="activity_page_title"]{
+    min-height: 150px;
+    max-height: 150px;
+    background-color: #f1efe7;
+    color: #005163;
+    font-size: 45px;
+    font-weight: 800;
+}
+
+QPushButton[role="activity_selection_btn"]{
+    min-width: 500px;
+    max-width: 500px;
+    min-height: 60px;
+    max-height: 60px;
+    border-radius: 10px;
+    background-color: #93dbe0;
+    color: #005163;
+    font-size: 24px;
+}
+
+QPushButton[role="pick_for_me_btn"]{
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 45px;
+    max-height: 45px;
+    border-radius: 20px;
+    background-color: #04bfbf;
+    color: #f1efe7;
+    font-size: 18px;
+}
+
+QLabel[role="activity_page_description"]{
+    background-color: #93dbe0;
+    color: #015c6a;
+    font-size: 18px;
+}
+
+#mindfulness_activity_btn, #physical_exercise_btn, #rest_btn{
+    min-height: 550px;
+    max-height: 550px;
+    min-width: 400px;
+    max-width: 400px;
+    background-color: #037f8c;
+    border-radius: 10px;
+    border: none;
+    color: white;  
+    font-size: 24px;
+}
+
+#mindfulness_activity_btn{
+    background-image: url('resources/icons/meditate.png');
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+#physical_exercise_btn{
+    background-image: url('resources/icons/exercise.png');
+    background-position: left;
+    background-repeat: no-repeat;
+}
+
+#rest_btn{
+    background-image: url('resources/icons/rest.png');
+    background-position: left;
+    background-repeat: no-repeat;
+}
+
+#mindfulness_activity_btn:hover, #physical_exercise_btn:hover, #rest_btn:hover{
+    font-weight: 600;
+}
+
+#noti_reenergize_btn, #noti_stop_btn, #noti_continue_btn{
+    min-width: 100px;
+    max-width: 100px;
+    min-height: 25px;
+    max-height: 25px;
+    background-color: #037f8c;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+#notification{
+    background-color: #f1efe7;
+}
+
+#noti_reenergize_btn:hover, #noti_stop_btn:hover, #noti_continue_btn:hover{
+    background-color: #015c6a;
+}
+
+#noti_message_label{
+    font-size: 15px;
+    color: #005163;
+}
+
+#timer_holder_widget{
+    background-color: #f1efe7;
+}
+
+#focus_zone_timer{
+    border-radius: 10px;
+}
+
+QWidget[role="focus_zone_timer"]{
+    border-radius: 10px;
+}
+
+#rest_page_top_widget{
+    background-image: url('resources/icons/beach.png');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#rest_page_timer, #rest_page_bottom_widget{
+    min-height: 300px;
+    max-height: 300px
+}
+
+#rest_page_suggestion_label{
+    font-size: 36px;
+    font-weight: 800;
+}
