@@ -14,3 +14,4 @@ class SidebarController(QObject):
         self.view.focus_zone_page_btn.clicked.connect(lambda: self.page_selected.emit("focus_zone"))
         self.view.mind_energizer_page_btn.clicked.connect(lambda: self.page_selected.emit("mind_energizer"))
         self.view.insights_page_btn.clicked.connect(lambda: self.page_selected.emit("insights"))
+        self.view.leaderboard_page_btn.clicked.connect(lambda: self.page_selected.emit("leaderboard"))

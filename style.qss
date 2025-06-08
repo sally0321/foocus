@@ -442,3 +442,90 @@ QWidget[role="focus_zone_timer"]{
     font-size: 36px;
     font-weight: 800;
 }
+
+#leaderboard_page_title{
+    min-height: 150px;
+    max-height: 150px;
+    background-color: #f1efe7;
+    color: #005163;
+    font-size: 60px;
+    font-weight: 800;
+}
+
+#leaderboard_page_subtitle{
+    color: #005163;
+    font-size: 30px;
+    font-weight: 800;
+}
+
+#first_rank_label{
+    background-image: url('resources/icons/first_place_icon.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    min-width: 60px;
+    max-width: 60px;
+    min-height: 60px;
+    max-height: 60px;
+}
+
+#second_rank_label{
+    background-image: url('resources/icons/second_place_icon.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    min-width: 60px;
+    max-width: 60px;
+    min-height: 60px;
+    max-height: 60px;
+}
+
+#third_rank_label{
+    background-image: url('resources/icons/third_place_icon.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    min-width: 60px;
+    max-width: 60px;
+    min-height: 60px;
+    max-height: 60px;
+}
+
+QLabel[role="leaderboard_column_title"]{
+    font-size: 27px;
+    font-weight: 700;
+    color: #005163;
+}
+
+QLabel[role="top3_user_label"], QLabel[role="top3_attention_span_label"]{
+    background-color: #93dbe0;
+    font-size: 24px;
+    color: #333333;
+}
+
+QLabel[role="rank_num_label"]{
+    min-width: 60px;
+    max-width: 60px;
+    min-height: 60px;
+    max-height: 60px;
+    font-size: 24px;
+    font-weight: 800;
+    color: #444444;
+}
+
+QLabel[role="user_label"], QLabel[role="attention_span_label"]{
+    font-size: 24px;
+    color: #333333;
+}
+
+QLabel[role="user_label"]{
+    min-width: 450px;
+    max-width: 450px;
+}
+
+QLabel[role="attention_span_label"]{
+    min-width: 300px;
+    max-width: 300px;
+}
+
+#leaderboard_page_spacing_label{
+    min-width: 50px;
+    max-width: 50px;
+}

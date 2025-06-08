@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget
 from controllers.activity_page_controller import ActivityPageController
 from controllers.activity_selection_page_controller import ActivitySelectionPageController
 from controllers.home_page_controller import HomePageController
+from controllers.leaderboard_page_controller import LeaderboardPageController
 from controllers.mind_energizer_page_controller import MindEnergizerPageController
 from controllers.rest_page_controller import RestPageController
 from controllers.sidebar_widget_controller import SidebarController
@@ -34,6 +35,7 @@ class MainWindow(QMainWindow):
         self.insights_page = InsightsPageController()
         self.mind_energizer_page = MindEnergizerPageController()
         self.rest_page = RestPageController()
+        self.leaderboard_page = LeaderboardPageController()
         
         self.mindfulness_activity_1_page_config = ActivityPageConfig(title="The Wheel of Awareness", text="Expand your focus by gently guiding your attention through different aspects of your experience.\nThis practice helps you strengthen your awareness by moving attention across your senses, thoughts, and feelings. It cultivates calmness, clarity, and mental flexibility — supporting you in regaining focus when distractions arise.", video_embed_link="https://www.youtube.com/embed/kZrjmPPvE7k?si=4Xhg2hxAkch6i5L5", timer_duration=0, page_name="mindfulness_activity_1")
         self.mindfulness_activity_2_page_config = ActivityPageConfig(title="Leaves on a Stream", text="Let go of thoughts by imagining them floating away on a gentle stream.\nThis exercise invites you to observe your thoughts without judgment. As each thought arises, place it on a leaf and watch it drift away. It promotes mental clarity and emotional distance from distractions, helping you return to a centered, focused state.", video_embed_link="https://www.youtube.com/embed/Ml-yuYraZkA?si=rfxn9jEaBtkWY5gG", timer_duration=0, page_name="mindfulness_activity_2")
@@ -74,7 +76,8 @@ class MainWindow(QMainWindow):
             self.physical_exercise_1_page_config.page_name: self.physical_exercise_1_page.view,
             self.physical_exercise_2_page_config.page_name: self.physical_exercise_2_page.view,
             self.physical_exercise_3_page_config.page_name: self.physical_exercise_3_page.view,
-            "rest": self.rest_page.view
+            "rest": self.rest_page.view,
+            "leaderboard": self.leaderboard_page.view
         }
 
         for app_pages in self.app_pages.values():

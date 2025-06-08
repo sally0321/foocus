@@ -1,8 +1,11 @@
+import uuid
+import bcrypt
+
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 from PySide6.QtWidgets import QMessageBox
 
-USERS_DB_CONNECTION_NAME = "users_db"
-USERS_DATABASE_NAME = "users.db"
+USERS_DB_CONNECTION_NAME = "foocus_users_db"
+USERS_DATABASE_NAME = "foocus_users.db"
 
 
 def initialize_userdb():
@@ -18,7 +21,7 @@ def initialize_userdb():
     query.exec(
         """
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -28,9 +31,10 @@ def initialize_userdb():
 
 def register_user(username, password):
     query = QSqlQuery(QSqlDatabase.database(USERS_DB_CONNECTION_NAME))
-    query.prepare("INSERT INTO users (username, password) VALUES (:username, :password)")
+    query.prepare("INSERT INTO users (id, username, password) VALUES (:id, :username, :password)")
+    query.bindValue(":id", str(uuid.uuid4()))
     query.bindValue(":username", username)
-    query.bindValue(":password", password)
+    query.bindValue(":password", bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'))
 
     if not query.exec():
         if "UNIQUE constraint failed" in query.lastError().text():
@@ -51,18 +55,26 @@ def register_user(username, password):
 
 def login_user(username, password):
     query = QSqlQuery(QSqlDatabase.database(USERS_DB_CONNECTION_NAME))
-    query.prepare("SELECT * FROM users WHERE username = :username AND password = :password")
+    query.prepare("SELECT * FROM users WHERE username = :username")
     query.bindValue(":username", username)
-    query.bindValue(":password", password)
 
     if query.exec() and query.next():
         user_id = query.value("id")
-        return {
-            "status": "success",
-            "user_id": user_id
-        }
+        hashed_pw = query.value("password")
+
+        is_valid = bcrypt.checkpw(password.encode('utf-8'), hashed_pw.encode('utf-8'))
+        if is_valid:
+            return {
+                "status": "success",
+                "user_id": user_id
+            }
+        else:
+            return {
+                "status": "error",
+                "message": "Invalid password."
+            }
     else:
         return {
             "status": "error",
-            "message": "Invalid username or password."
+            "message": "Invalid username."
         }
