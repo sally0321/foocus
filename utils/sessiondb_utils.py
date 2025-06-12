@@ -38,14 +38,11 @@ def initialize_session_metrics_db():
         )
     """)
 
-def insert_session(session_log: SessionLog, session_metrics: SessionMetrics):
-    session_id = str(uuid.uuid4())
-    timestamp = datetime.now().isoformat()
-
+def insert_session_to_local_db(session_log: SessionLog, session_metrics: SessionMetrics):
     # Store raw data in TinyDB
     db = initialize_session_log_db()
     db.insert({
-        "session_id": session_id,
+        "session_id": session_log.session_id,
         "svc_predictions": [int(x) for x in session_log.svc_predictions],
         "ear_values": [float(x) for x in session_log.ear_values]
     })
@@ -60,26 +57,27 @@ def insert_session(session_log: SessionLog, session_metrics: SessionMetrics):
             start_time,
             end_time,
             active_duration,
+            pause_duration,
             attention_span,
             frequency_unfocus,
             focus_duration,
             unfocus_duration
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """)
-    query.addBindValue(session_id)
-    query.addBindValue(timestamp)
+    query.addBindValue(session_metrics.session_id)
+    query.addBindValue(datetime.now().isoformat())
     query.addBindValue(session_metrics.user_id)
     query.addBindValue(session_metrics.start_time)
     query.addBindValue(session_metrics.end_time)
     query.addBindValue(session_metrics.active_duration)
+    query.addBindValue(session_metrics.pause_duration)
     query.addBindValue(session_metrics.attention_span)
     query.addBindValue(session_metrics.frequency_unfocus)
     query.addBindValue(session_metrics.focus_duration)
     query.addBindValue(session_metrics.unfocus_duration)
     if not query.exec():
         print("Insert failed:", query.lastError().text())
-    return session_id
 
 def get_avg_attention_span(user_id):
     query = QSqlQuery(QSqlDatabase.database(SESSION_METRICS_DB_CONNECTION_NAME))

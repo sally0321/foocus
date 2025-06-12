@@ -16,6 +16,7 @@ import pandas as pd
 from views.attention_detector_widget import AttentionDetectorWidget
 from utils.eye_landmarks_utils import *
 from utils.sessiondb_utils import *
+from utils.cloud_sessiondb_utils import *
 from models.data import *
 from models.login_session import LoginSession
 
@@ -54,6 +55,7 @@ class AttentionDetectorWidgetController(QObject):
         self.pause_intervals = []
         self.current_pause_start_time= None
         self.notification_times = []
+        self.session_id = str(uuid.uuid4())
 
         # Video Capture
         self.cap = None
@@ -125,6 +127,8 @@ class AttentionDetectorWidgetController(QObject):
         self.pause_intervals = []
         self.current_pause_start_time = None
         self.notification_times = []
+
+        self.session_id = str(uuid.uuid4())
 
     def _open_ear_calculation_result_file(self, base_filename):
         """Opens a new output file for EAR values, closing the previous one if open."""
@@ -208,11 +212,13 @@ class AttentionDetectorWidgetController(QObject):
             self.is_stop.emit()
 
             session_metrics = self.create_session_metrics()
-            session_log = SessionLog(
-                svc_predictions=self.all_svc_predictions,
-                ear_values=self.all_ear_values
-            )
-            insert_session(session_log, session_metrics)
+            session_log = self.create_session_log()
+            insert_session_to_local_db(session_log, session_metrics)
+
+            try:
+                insert_session_to_cloud_db(session_metrics)
+            except Exception as e:
+                print(e)
 
             self._reset_state()
 
@@ -478,6 +484,13 @@ class AttentionDetectorWidgetController(QObject):
 
         dialog_box.exec()
     
+    def create_session_log(self):
+        return SessionLog(
+            session_id=self.session_id,
+            svc_predictions=self.all_svc_predictions,
+            ear_values=self.all_ear_values
+        )
+    
     def create_session_metrics(self):
         first_notification_time = self.notification_times[0] if self.notification_times else datetime.max
         first_pause_start_time = self.pause_intervals[0][0] if self.pause_intervals else datetime.max
@@ -505,11 +518,14 @@ class AttentionDetectorWidgetController(QObject):
         
         login_session = LoginSession()
         user_id = login_session.get_user_id()
+        username = login_session.get_username()
 
         return SessionMetrics(
+            session_id=self.session_id,
             user_id=user_id,
-            start_time=self.start_time,
-            end_time=self.end_time,
+            username=username,
+            start_time=str(self.start_time),
+            end_time=str(self.end_time),
             active_duration=active_duration,
             pause_duration=pause_duration,
             attention_span=attention_span,

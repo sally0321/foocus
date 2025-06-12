@@ -2,7 +2,9 @@ from dataclasses import dataclass
 
 @dataclass
 class SessionMetrics:
-    user_id: int
+    session_id: str
+    user_id: str
+    username: str
     start_time: str
     end_time: str
     active_duration: float
@@ -14,6 +16,7 @@ class SessionMetrics:
 
 @dataclass
 class SessionLog:
+    session_id: str
     svc_predictions: list[int]
     ear_values: list[float]
 
