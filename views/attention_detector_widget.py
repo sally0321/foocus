@@ -11,7 +11,7 @@ class AttentionDetectorWidget(QWidget):
         self.widget = QWidget()
         self.layout = QVBoxLayout(self.widget)
 
-        self.camera_feed_label = QLabel("Click start to activate the attention detector")
+        self.camera_feed_label = QLabel("Click start to activate the attention detector 📷")
         # self.control_btns = QWidget()
         # self.control_btns_layout = QHBoxLayout(self.control_btns)
         # self.start_pause_btn = QPushButton("Start")

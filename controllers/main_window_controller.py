@@ -1,5 +1,6 @@
 from PySide6.QtCore import QObject
 
+from models.login_session import LoginSession
 from views.main_window import MainWindow
 
 class MainWindowController(QObject):
@@ -31,7 +32,11 @@ class MainWindowController(QObject):
         if app_page:
             match (app_page_name):
                 case "main":
+                    login_session = LoginSession()
+                    username = login_session.get_username()
                     self.main_window.home_page.load_home_page()
+                    self.main_window.sidebar.view.user_btn.setText(username)
+                    
             self.main_window.app_pages_stack.setCurrentWidget(app_page)
 
     def switch_content_page(self, content_page_name):
@@ -42,6 +47,8 @@ class MainWindowController(QObject):
                     self.main_window.home_page.load_home_page()
                 case "insights":
                     self.main_window.insights_page.load_insights()
+                case "leaderboard":
+                    self.main_window.leaderboard_page.load_leaderboard()
             self.main_window.content_pages_stack.setCurrentWidget(content_page)
 
     def bring_window_to_front(self):

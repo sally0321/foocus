@@ -18,6 +18,9 @@ class SidebarWidget(QWidget):
         self.insights_page_btn = QPushButton(icon=QIcon("resources/icons/insights_icon.png"), text="Insights")
         self.leaderboard_page_btn = QPushButton(icon=QIcon("resources/icons/leaderboard_icon.png"), text="Leaderboard")
 
+        self.user_btn = QPushButton(icon=QIcon("resources/icons/user_icon.png"), text="You")
+        self.user_btn.setDisabled(True)
+
         self.home_page_btn.setCursor(QCursor(Qt.PointingHandCursor))
         self.focus_zone_page_btn.setCursor(QCursor(Qt.PointingHandCursor))
         self.mind_energizer_page_btn.setCursor(QCursor(Qt.PointingHandCursor))
@@ -30,6 +33,7 @@ class SidebarWidget(QWidget):
         self.layout.addWidget(self.insights_page_btn)
         self.layout.addWidget(self.leaderboard_page_btn)
         self.layout.addStretch()
+        self.layout.addWidget(self.user_btn)
 
         self.widget.setObjectName("sidebar")
 

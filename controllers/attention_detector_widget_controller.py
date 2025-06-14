@@ -12,6 +12,7 @@ from mediapipe.tasks.python import vision
 import joblib 
 import cv2
 import pandas as pd
+from requests.exceptions import ConnectionError
 
 from views.attention_detector_widget import AttentionDetectorWidget
 from utils.eye_landmarks_utils import *
@@ -206,7 +207,7 @@ class AttentionDetectorWidgetController(QObject):
                 self.ear_classification_result_file = None
             
             self.view.camera_feed_label.clear() # Clear the video display
-            self.view.camera_feed_label.setText("Click start to activate the attention detector")
+            self.view.camera_feed_label.setText("Click start to activate the attention detector 📷")
             # self.view.start_pause_btn.setText("Start")
 
             self.is_stop.emit()
@@ -216,9 +217,23 @@ class AttentionDetectorWidgetController(QObject):
             insert_session_to_local_db(session_log, session_metrics)
 
             try:
-                insert_session_to_cloud_db(session_metrics)
+                insert_session_to_cloud_db_response = insert_session_to_cloud_db(session_metrics)
+                if insert_session_to_cloud_db_response['status'] != "success":
+                    raise Exception
+            except ConnectionError as e:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle("Connection Error")
+                msg.setText("You appear to be offline. The session data was not uploaded to the cloud.")
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.exec()
             except Exception as e:
-                print(e)
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle("Unexpected Error")
+                msg.setText("Uh oh, an unexpected error occurs. The session data was not uploaded to the cloud.")
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.exec()
 
             self._reset_state()
 

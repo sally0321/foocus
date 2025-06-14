@@ -7,10 +7,10 @@ class LeaderboardPage(QWidget):
 
         self.layout = QVBoxLayout(self)
 
-        self.title_label = QLabel("Leaderboard", alignment=Qt.AlignCenter)
+        self.title_label = QLabel("Meet the Attention Span Legends!", alignment=Qt.AlignCenter)
         self.title_label.setObjectName("leaderboard_page_title")
 
-        self.subtitle_label = QLabel("Meet the Attention Span Legends of the Week!", alignment=Qt.AlignCenter)
+        self.subtitle_label = QLabel("", alignment=Qt.AlignCenter)
         self.subtitle_label.setObjectName("leaderboard_page_subtitle")
 
         self.leaderboard = QWidget()
@@ -18,7 +18,7 @@ class LeaderboardPage(QWidget):
 
         self.rank_label = QLabel("Rank", alignment=Qt.AlignCenter)
         self.user_label = QLabel("User", alignment=Qt.AlignCenter)
-        self.attention_span_label = QLabel("Attention Span", alignment=Qt.AlignCenter)
+        self.attention_span_label = QLabel("Average Attention Span", alignment=Qt.AlignCenter)
         self.rank_label.setProperty("role", "leaderboard_column_title")
         self.user_label.setProperty("role", "leaderboard_column_title")
         self.attention_span_label.setProperty("role", "leaderboard_column_title")
@@ -57,6 +57,9 @@ class LeaderboardPage(QWidget):
         self.fifth_rank_label.setProperty("role", "rank_num_label")
         self.fifth_user_label.setProperty("role", "user_label")
         self.fifth_attention_span_label.setProperty("role", "attention_span_label")
+
+        self.user_labels = [self.first_user_label, self.second_user_label, self.third_user_label, self.fourth_user_label, self.fifth_user_label]
+        self.attention_span_labels = [self.first_attention_span_label, self.second_attention_span_label, self.third_attention_span_label, self.fourth_attention_span_label, self.fifth_attention_span_label]
 
         spacing_label = QLabel()
         spacing_label.setObjectName("leaderboard_page_spacing_label")

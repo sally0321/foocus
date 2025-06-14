@@ -3,13 +3,7 @@ from dataclasses import asdict
 import json
 import requests
 
-import pytds
-
 from models.data import SessionMetrics
-
-# CONN_STR = f"""Server=tcp:my-projects-svr.database.windows.net,1433;Initial Catalog=foocus;Persist Security Info=False;User ID=21058375@imail.sunway.edu.my;Password=19121819=toSLRS;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Authentication="Active Directory Password";"""
-
-# DRIVER={ODBC Driver 17 for SQL Server};SERVER=my-projects-svr.database.windows.net;DATABASE=foocus;UID=21058375@imail.sunway.edu.my;PWD=19121819=toSLRS
 
 server = 'my-projects-svr.database.windows.net'
 database = 'foocus'
@@ -28,6 +22,16 @@ def insert_session_to_cloud_db(session_metrics: SessionMetrics):
     body = asdict(session_metrics)
 
     response = requests.post(url=URL, headers=headers, json=body)
-    print(response.status_code)
-    print(response.text)
+    return json.loads(response.text)
 
+def get_weekly_top5_attention_span():
+    URL = "https://foocus-apim.azure-api.net/foocus/weekly-top5-attention-span"
+
+    SUBSCRIPTION_KEY = "34942be976114df393e1e2e7db7ea322"
+
+    headers = {
+    "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY
+    }
+
+    response = requests.get(url=URL, headers=headers)
+    return json.loads(response.text)
