@@ -16,7 +16,7 @@ class InsightsPageController(QObject):
         login_session = LoginSession()
         user_id = login_session.get_user_id()
 
-        latest_attention_spans = get_attention_spans(user_id, 5)
+        latest_attention_spans = get_recent_attention_spans(user_id, 5)
         average_attention_span = get_avg_attention_span(user_id)
         longest_attention_span = get_longest_attention_span(user_id)
         highest_unfocus_frequency = get_highest_unfocus_frequency(user_id)
@@ -31,7 +31,24 @@ class InsightsPageController(QObject):
         timestamps.reverse()
         attention_spans = [round(span / 60, 1) for _, span in latest_attention_spans]
         attention_spans.reverse()
-        self.view.attention_span_history_ax.plot(timestamps, attention_spans, color='#04bfbf')
+        
+        self.view.attention_span_history_ax.clear()
+        if not attention_spans:
+            # Display a message in the center of the plot
+            self.view.attention_span_history_ax.text(
+                0.5, 0.5, "No data available yet",
+                horizontalalignment='center',
+                verticalalignment='center',
+                transform=self.view.attention_span_history_ax.transAxes,
+                fontsize=12,
+                color='gray'
+            )
+            self.view.attention_span_history_ax.set_xticks([])  # Optional: hide x ticks
+            self.view.attention_span_history_ax.set_yticks([])  # Optional: hide y ticks
+        else:
+            self.view.attention_span_history_ax.plot(timestamps, attention_spans, color='#04bfbf', marker='.')
+        
+        self.view.attention_span_history_canvas.draw()
         # self.view.attention_span_history_figure.set_alpha(0.0) 
         # self.view.attention_span_history_ax.set_alpha(0.0)
 

@@ -37,25 +37,25 @@ class MainWindow(QMainWindow):
         self.rest_page = RestPageController()
         self.leaderboard_page = LeaderboardPageController()
         
-        self.mindfulness_activity_1_page_config = ActivityPageConfig(title="The Wheel of Awareness", text="Expand your focus by gently guiding your attention through different aspects of your experience.\nThis practice helps you strengthen your awareness by moving attention across your senses, thoughts, and feelings. It cultivates calmness, clarity, and mental flexibility — supporting you in regaining focus when distractions arise.", video_embed_link="https://www.youtube.com/embed/kZrjmPPvE7k?si=4Xhg2hxAkch6i5L5", timer_duration=0, page_name="mindfulness_activity_1")
-        self.mindfulness_activity_2_page_config = ActivityPageConfig(title="Leaves on a Stream", text="Let go of thoughts by imagining them floating away on a gentle stream.\nThis exercise invites you to observe your thoughts without judgment. As each thought arises, place it on a leaf and watch it drift away. It promotes mental clarity and emotional distance from distractions, helping you return to a centered, focused state.", video_embed_link="https://www.youtube.com/embed/Ml-yuYraZkA?si=rfxn9jEaBtkWY5gG", timer_duration=0, page_name="mindfulness_activity_2")
-        self.mindfulness_activity_3_page_config = ActivityPageConfig(title="Eye of the Hurricane", text="Find calm at the center of life’s storms, just like the stillness at the eye of a hurricane.\nThis guided activity encourages you to notice the chaos around you while anchoring yourself in an inner place of calm. It builds emotional resilience and focus, allowing you to stay grounded even when your mind feels scattered.", video_embed_link="https://www.youtube.com/embed/HPFayxlm_ms?si=Yy7yeFQYAUxBuV6T", timer_duration=0, page_name="mindfulness_activity_3")
-        self.mindfulness_activity_page_configs = [self.mindfulness_activity_1_page_config, self.mindfulness_activity_2_page_config, self.mindfulness_activity_3_page_config]
+        mindfulness_activity_1_page_config = ActivityPageConfig(title="The Wheel of Awareness", text="Expand your focus by gently guiding your attention through different aspects of your experience.\nThis practice helps you strengthen your awareness by moving attention across your senses, thoughts, and feelings. It cultivates calmness, clarity, and mental flexibility — supporting you in regaining focus when distractions arise.", video_embed_link="https://www.youtube.com/embed/kZrjmPPvE7k?si=4Xhg2hxAkch6i5L5", timer_duration=0, page_name="mindfulness_activity_1")
+        mindfulness_activity_2_page_config = ActivityPageConfig(title="Leaves on a Stream", text="Let go of thoughts by imagining them floating away on a gentle stream.\nThis exercise invites you to observe your thoughts without judgment. As each thought arises, place it on a leaf and watch it drift away. It promotes mental clarity and emotional distance from distractions, helping you return to a centered, focused state.", video_embed_link="https://www.youtube.com/embed/Ml-yuYraZkA?si=rfxn9jEaBtkWY5gG", timer_duration=0, page_name="mindfulness_activity_2")
+        mindfulness_activity_3_page_config = ActivityPageConfig(title="Eye of the Hurricane", text="Find calm at the center of life’s storms, just like the stillness at the eye of a hurricane.\nThis guided activity encourages you to notice the chaos around you while anchoring yourself in an inner place of calm. It builds emotional resilience and focus, allowing you to stay grounded even when your mind feels scattered.", video_embed_link="https://www.youtube.com/embed/HPFayxlm_ms?si=Yy7yeFQYAUxBuV6T", timer_duration=0, page_name="mindfulness_activity_3")
+        self.mindfulness_activity_page_configs = [mindfulness_activity_1_page_config, mindfulness_activity_2_page_config, mindfulness_activity_3_page_config]
         
         self.mindfulness_activity_selection_page = ActivitySelectionPageController("Mindfulness Activity", self.mindfulness_activity_page_configs)
-        self.mindfulness_activity_1_page = ActivityPageController(self.mindfulness_activity_1_page_config)
-        self.mindfulness_activity_2_page = ActivityPageController(self.mindfulness_activity_2_page_config)
-        self.mindfulness_activity_3_page = ActivityPageController(self.mindfulness_activity_3_page_config)
+        self.mindfulness_activity_1_page = ActivityPageController(mindfulness_activity_1_page_config)
+        self.mindfulness_activity_2_page = ActivityPageController(mindfulness_activity_2_page_config)
+        self.mindfulness_activity_3_page = ActivityPageController(mindfulness_activity_3_page_config)
 
-        self.physical_exercise_1_page_config = ActivityPageConfig(title="High Knee Jog in Place", text="", video_embed_link="https://www.youtube.com/embed/IpnHwUwrVVY?si=lFJ1Ap-0PKZ9RcI0", timer_duration=30, page_name="physical_exercise_1")
-        self.physical_exercise_2_page_config = ActivityPageConfig(title="Star Jump", text="", video_embed_link="https://www.youtube.com/embed/VVEO_J1tIXU?si=yI216dgsgMbnaIvG", timer_duration=300, page_name="physical_exercise_2")
-        self.physical_exercise_3_page_config = ActivityPageConfig(title="Brisk Walking", text="", video_embed_link="https://www.youtube.com/embed/tVpUCkMLgms?si=x58F0AWgP2YyQDtF", timer_duration=300, page_name="physical_exercise_3")
-        self.physical_exercise_page_configs = [self.physical_exercise_1_page_config, self.physical_exercise_2_page_config, self.physical_exercise_3_page_config]
+        physical_exercise_1_page_config = ActivityPageConfig(title="High Knee Jog in Place", text="", video_embed_link="https://www.youtube.com/embed/IpnHwUwrVVY?si=lFJ1Ap-0PKZ9RcI0", timer_duration=30, page_name="physical_exercise_1")
+        physical_exercise_2_page_config = ActivityPageConfig(title="Star Jump", text="", video_embed_link="https://www.youtube.com/embed/VVEO_J1tIXU?si=yI216dgsgMbnaIvG", timer_duration=300, page_name="physical_exercise_2")
+        physical_exercise_3_page_config = ActivityPageConfig(title="Brisk Walking", text="", video_embed_link="https://www.youtube.com/embed/tVpUCkMLgms?si=x58F0AWgP2YyQDtF", timer_duration=300, page_name="physical_exercise_3")
+        self.physical_exercise_page_configs = [physical_exercise_1_page_config, physical_exercise_2_page_config, physical_exercise_3_page_config]
         
         self.physical_exercise_selection_page = ActivitySelectionPageController("Physical Exercise", self.physical_exercise_page_configs)
-        self.physical_exercise_1_page = ActivityPageController(self.physical_exercise_1_page_config)
-        self.physical_exercise_2_page = ActivityPageController(self.physical_exercise_2_page_config)
-        self.physical_exercise_3_page = ActivityPageController(self.physical_exercise_3_page_config)
+        self.physical_exercise_1_page = ActivityPageController(physical_exercise_1_page_config)
+        self.physical_exercise_2_page = ActivityPageController(physical_exercise_2_page_config)
+        self.physical_exercise_3_page = ActivityPageController(physical_exercise_3_page_config)
 
         self.app_pages = {
             "log_in": self.log_in_page.view,
@@ -69,13 +69,13 @@ class MainWindow(QMainWindow):
             "insights": self.insights_page.view,
             "mind_energizer": self.mind_energizer_page.view,
             "mindfulness_activity_selection": self.mindfulness_activity_selection_page.view,
-            self.mindfulness_activity_1_page_config.page_name: self.mindfulness_activity_1_page.view,
-            self.mindfulness_activity_2_page_config.page_name: self.mindfulness_activity_2_page.view,
-            self.mindfulness_activity_3_page_config.page_name: self.mindfulness_activity_3_page.view,
+            mindfulness_activity_1_page_config.page_name: self.mindfulness_activity_1_page.view,
+            mindfulness_activity_2_page_config.page_name: self.mindfulness_activity_2_page.view,
+            mindfulness_activity_3_page_config.page_name: self.mindfulness_activity_3_page.view,
             "physical_exercise_selection": self.physical_exercise_selection_page.view,
-            self.physical_exercise_1_page_config.page_name: self.physical_exercise_1_page.view,
-            self.physical_exercise_2_page_config.page_name: self.physical_exercise_2_page.view,
-            self.physical_exercise_3_page_config.page_name: self.physical_exercise_3_page.view,
+            physical_exercise_1_page_config.page_name: self.physical_exercise_1_page.view,
+            physical_exercise_2_page_config.page_name: self.physical_exercise_2_page.view,
+            physical_exercise_3_page_config.page_name: self.physical_exercise_3_page.view,
             "rest": self.rest_page.view,
             "leaderboard": self.leaderboard_page.view
         }

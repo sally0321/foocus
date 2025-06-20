@@ -27,6 +27,8 @@ class InsightsPage(QWidget):
         self.attention_span_history_ax.set_title("Focus History")
         self.attention_span_history_ax.set_xlabel("Study Sessions")
         self.attention_span_history_ax.set_ylabel("Attention Span (minutes)")
+        self.attention_span_history_ax.set_xlim(left=0)
+        self.attention_span_history_ax.set_ylim(bottom=0)
         self.attention_span_history_figure.tight_layout()
         #self.attention_span_history_layout.addWidget(self.attention_span_history_h1)
         self.attention_span_history_layout.addWidget(self.attention_span_history_canvas)

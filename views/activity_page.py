@@ -11,6 +11,8 @@ class ActivityPage(QWidget):
     def __init__(self, activity_page_config: ActivityPageConfig):
         super().__init__()
 
+        self.page_config = activity_page_config
+
         self.layout = QVBoxLayout(self)
 
         self.page_title = QLabel(activity_page_config.title, alignment=Qt.AlignCenter)

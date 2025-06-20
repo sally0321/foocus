@@ -25,7 +25,7 @@ def initialize_session_metrics_db():
         CREATE TABLE IF NOT EXISTS {SESSION_METRICS_TABLE_NAME} (
             session_id TEXT PRIMARY KEY,
             saved_at TEXT,
-            user_id INTEGER,
+            user_id TEXT,
             start_time TEXT,
             end_time TEXT,
             active_duration FLOAT,
@@ -34,7 +34,7 @@ def initialize_session_metrics_db():
             frequency_unfocus INTEGER,
             focus_duration FLOAT,
             unfocus_duration FLOAT,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(user_id)
         )
     """)
 
@@ -119,7 +119,7 @@ def get_lowest_unfocus_frequency(user_id):
         return lowest_unfocus_frequency
     return None
 
-def get_attention_spans(user_id, limit):
+def get_recent_attention_spans(user_id, limit):
     query = QSqlQuery(QSqlDatabase.database(SESSION_METRICS_DB_CONNECTION_NAME))
     query.prepare(f"""
         SELECT attention_span, saved_at

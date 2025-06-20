@@ -21,7 +21,7 @@ def initialize_userdb():
     query.exec(
         """
         CREATE TABLE IF NOT EXISTS users (
-            id TEXT PRIMARY KEY,
+            user_id TEXT PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -30,9 +30,10 @@ def initialize_userdb():
     )
 
 def register_user(username, password):
+    user_id = str(uuid.uuid4())
     query = QSqlQuery(QSqlDatabase.database(USERS_DB_CONNECTION_NAME))
-    query.prepare("INSERT INTO users (id, username, password) VALUES (:id, :username, :password)")
-    query.bindValue(":id", str(uuid.uuid4()))
+    query.prepare("INSERT INTO users (user_id, username, password) VALUES (:user_id, :username, :password)")
+    query.bindValue(":user_id", user_id)
     query.bindValue(":username", username)
     query.bindValue(":password", bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'))
 
@@ -50,7 +51,7 @@ def register_user(username, password):
     else:
         return {
             "status": "success",
-            "user_id": query.lastInsertId()
+            "user_id": user_id
         }
 
 def login_user(username, password):
@@ -59,7 +60,7 @@ def login_user(username, password):
     query.bindValue(":username", username)
 
     if query.exec() and query.next():
-        user_id = query.value("id")
+        user_id = query.value("user_id")
         hashed_pw = query.value("password")
 
         is_valid = bcrypt.checkpw(password.encode('utf-8'), hashed_pw.encode('utf-8'))
