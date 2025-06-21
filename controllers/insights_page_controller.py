@@ -33,6 +33,9 @@ class InsightsPageController(QObject):
         attention_spans.reverse()
         
         self.view.attention_span_history_ax.clear()
+        self.view.attention_span_history_ax.set_title("Focus History")
+        self.view.attention_span_history_ax.set_xlabel("Study Sessions")
+        self.view.attention_span_history_ax.set_ylabel("Attention Span (minutes)")
         if not attention_spans:
             # Display a message in the center of the plot
             self.view.attention_span_history_ax.text(

@@ -2,6 +2,10 @@ QMainWindow{
     background-color: #ffffff;
 }
 
+#eye_status_label{
+    font-size: 24px;
+}
+
 #sidebar{
     background-color: #037f8c;
 }

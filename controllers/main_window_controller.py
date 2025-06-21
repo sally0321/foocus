@@ -19,7 +19,7 @@ class MainWindowController(QObject):
         self.main_window.mindfulness_activity_selection_page.page_selected.connect(self.switch_content_page)
         self.main_window.physical_exercise_selection_page.page_selected.connect(self.switch_content_page)
 
-        self.main_window.focus_zone_page.view.attention_detector.is_notification.connect(self.bring_window_to_front)
+        self.main_window.focus_zone_page.view.attention_detector.is_notification_start.connect(self.bring_window_to_front)
         self.main_window.focus_zone_page.view.attention_detector.page_selected.connect(self.switch_content_page)
 
         self.main_window.rest_page.is_notification.connect(self.bring_window_to_front)

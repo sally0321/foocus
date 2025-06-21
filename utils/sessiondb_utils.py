@@ -24,16 +24,16 @@ def initialize_session_metrics_db():
     query.exec(f"""
         CREATE TABLE IF NOT EXISTS {SESSION_METRICS_TABLE_NAME} (
             session_id TEXT PRIMARY KEY,
-            saved_at TEXT,
-            user_id TEXT,
-            start_time TEXT,
-            end_time TEXT,
-            active_duration FLOAT,
-            pause_duration FLOAT,
-            attention_span FLOAT,
-            frequency_unfocus INTEGER,
-            focus_duration FLOAT,
-            unfocus_duration FLOAT,
+            saved_at TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            start_time TEXT NOT NULL,
+            end_time TEXT NOT NULL,
+            active_duration FLOAT NOT NULL,
+            pause_duration FLOAT NOT NULL,
+            attention_span FLOAT NOT NULL,
+            frequency_unfocus INTEGER NOT NULL,
+            focus_duration FLOAT NOT NULL,
+            unfocus_duration FLOAT NOT NULL,
             FOREIGN KEY (user_id) REFERENCES users(user_id)
         )
     """)

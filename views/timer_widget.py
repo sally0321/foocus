@@ -13,7 +13,8 @@ class TimerWidget(QWidget):
         self.widget = QWidget()
         self.layout = QVBoxLayout(self.widget)
 
-        self.time_display = QLabel(f"{(initial_time // 60):02}:{(initial_time % 60):02}")
+        # self.time_display = QLabel(f"{(initial_time // 60):02}:{(initial_time % 60):02}")
+        self.time_display = QLabel("00:00")
         
         self.time_selector = QWidget()
         self.time_selector_layout = QHBoxLayout(self.time_selector)
@@ -28,8 +29,10 @@ class TimerWidget(QWidget):
 
         self.minutes_input.setRange(0, 59)
         self.minutes_input.setSuffix(" min")
+        self.minutes_input.setValue(initial_time // 60)
         self.seconds_input.setRange(0, 59)
         self.seconds_input.setSuffix(" sec")
+        self.seconds_input.setValue(initial_time % 60)
 
         self.play_pause_btn.setCursor(QCursor(Qt.PointingHandCursor))
         self.restart_btn.setCursor(QCursor(Qt.PointingHandCursor))

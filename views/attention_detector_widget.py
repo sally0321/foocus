@@ -11,14 +11,14 @@ class AttentionDetectorWidget(QWidget):
         self.widget = QWidget()
         self.layout = QVBoxLayout(self.widget)
 
-        self.camera_feed_label = QLabel("Click start to activate the attention detector 📷")
+        self.eye_status_label = QLabel("", alignment=Qt.AlignCenter)
+        self.camera_feed_label = QLabel("Click start to activate the attention detector 📷", alignment=Qt.AlignCenter)
         # self.control_btns = QWidget()
         # self.control_btns_layout = QHBoxLayout(self.control_btns)
         # self.start_pause_btn = QPushButton("Start")
         # self.stop_btn = QPushButton("Stop")
 
         self.camera_feed_label.setFixedSize(600, 400)
-        self.camera_feed_label.setAlignment(Qt.AlignCenter)
 
         # self.start_pause_btn.setCursor(QCursor(Qt.PointingHandCursor))
         # self.stop_btn.setCursor(QCursor(Qt.PointingHandCursor))
@@ -27,11 +27,13 @@ class AttentionDetectorWidget(QWidget):
         # self.control_btns_layout.addWidget(self.stop_btn, alignment=Qt.AlignHCenter)
 
         self.layout.addStretch()
+        self.layout.addWidget(self.eye_status_label, alignment=Qt.AlignHCenter)
         self.layout.addWidget(self.camera_feed_label, alignment=Qt.AlignHCenter)
         # self.layout.addWidget(self.control_btns, alignment=Qt.AlignHCenter)
         self.layout.addStretch()
 
         self.widget.setObjectName("camera_feed")
+        self.eye_status_label.setObjectName("eye_status_label")
 
         self.base.setContentsMargins(0, 0, 0, 0)
 

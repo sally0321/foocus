@@ -27,7 +27,7 @@ EAR_CALCULATION_RESULT_DIR = "./ear_calculation_results"
 EAR_CLASSIFICATION_RESULT_DIR = "./ear_classification_results"
 NUMBER_OF_EAR= 15 
 PREDICTION_INTERVAL_FRAME = 5 
-DEFAULT_PREDICTION_TEXT = "Status: N/A"
+DEFAULT_PREDICTION_TEXT = ""
 RULE_1_WINDOW_SEC = 5
 RULE_1_NUMBER_OF_CONSECUTIVE_LONG_BLINKS = 5
 RULE_2_WINDOW_SEC = 60
@@ -36,7 +36,8 @@ DEFAULT_FPS = 30.0
 
 class AttentionDetectorWidgetController(QObject):
     latest_ear_value = Signal(float)
-    is_notification = Signal()
+    is_notification_start = Signal()
+    is_notification_end = Signal()
     page_selected = Signal(str)
     is_stop = Signal()
 
@@ -131,41 +132,41 @@ class AttentionDetectorWidgetController(QObject):
 
         self.session_id = str(uuid.uuid4())
 
-    def _open_ear_calculation_result_file(self, base_filename):
-        """Opens a new output file for EAR values, closing the previous one if open."""
-        # Close previous EAR output file.
-        if self.ear_calculation_result_file and not self.ear_calculation_result_file.closed:
-            self.ear_calculation_result_file.close()
+    # def _open_ear_calculation_result_file(self, base_filename):
+    #     """Opens a new output file for EAR values, closing the previous one if open."""
+    #     # Close previous EAR output file.
+    #     if self.ear_calculation_result_file and not self.ear_calculation_result_file.closed:
+    #         self.ear_calculation_result_file.close()
 
-        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        output_path = os.path.join(EAR_CALCULATION_RESULT_DIR, f"{base_filename}_{timestamp}.txt")
+    #     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    #     output_path = os.path.join(EAR_CALCULATION_RESULT_DIR, f"{base_filename}_{timestamp}.txt")
         
-        try:
-            self.ear_calculation_result_file = open(output_path, "w")
-        except Exception as e:
-            self.ear_calculation_result_file = None 
-            QMessageBox.warning(self, "Warning", f"Could not open EAR output file:\n{output_path}\n\n{e}")
+    #     try:
+    #         self.ear_calculation_result_file = open(output_path, "w")
+    #     except Exception as e:
+    #         self.ear_calculation_result_file = None 
+    #         QMessageBox.warning(self, "Warning", f"Could not open EAR output file:\n{output_path}\n\n{e}")
 
-    def _open_ear_classification_result_file(self, base_filename):
-        """Opens a new output file for classification results, closing the previous one if open."""
-        # Close previous classification result file.
-        if self.ear_classification_result_file and not self.ear_classification_result_file.closed:
-            self.ear_classification_result_file.close()
+    # def _open_ear_classification_result_file(self, base_filename):
+    #     """Opens a new output file for classification results, closing the previous one if open."""
+    #     # Close previous classification result file.
+    #     if self.ear_classification_result_file and not self.ear_classification_result_file.closed:
+    #         self.ear_classification_result_file.close()
 
-        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        output_path = os.path.join(EAR_CLASSIFICATION_RESULT_DIR, f"{base_filename}_{timestamp}.txt")
+    #     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    #     output_path = os.path.join(EAR_CLASSIFICATION_RESULT_DIR, f"{base_filename}_{timestamp}.txt")
         
-        try:
-            self.ear_classification_result_file = open(output_path, "w")
-        except Exception as e:
-            self.ear_classification_result_file = None # Ensure it's None on failure
-            QMessageBox.warning(self, "Warning", f"Could not open classification result file:\n{output_path}\n\n{e}")
+    #     try:
+    #         self.ear_classification_result_file = open(output_path, "w")
+    #     except Exception as e:
+    #         self.ear_classification_result_file = None # Ensure it's None on failure
+    #         QMessageBox.warning(self, "Warning", f"Could not open classification result file:\n{output_path}\n\n{e}")
 
     def start_camera(self):
         if not self.cap:
             self._reset_state()
-            self._open_ear_calculation_result_file("camera_capture")
-            self._open_ear_classification_result_file("camera_capture")
+            # self._open_ear_calculation_result_file("camera_capture")
+            # self._open_ear_classification_result_file("camera_capture")
             self.timer.setInterval(33)
             self.actual_fps = DEFAULT_FPS
             self.start_time = datetime.now()
@@ -208,6 +209,7 @@ class AttentionDetectorWidgetController(QObject):
             
             self.view.camera_feed_label.clear() # Clear the video display
             self.view.camera_feed_label.setText("Click start to activate the attention detector 📷")
+            self.view.eye_status_label.setText("")
             # self.view.start_pause_btn.setText("Start")
 
             self.is_stop.emit()
@@ -277,13 +279,13 @@ class AttentionDetectorWidgetController(QObject):
 
         # TODO: change rule trigger message and remove print statement
         if is_rule_1_triggered:
-            rule_1_trigger_message = (f"Rule 1: Drowsiness inferred. {RULE_1_NUMBER_OF_CONSECUTIVE_LONG_BLINKS} "
-                             f"consecutive 'long blink' outputs detected, ending at prediction "
-                             f"#{sequence_end_idx + 1}.")
+            # rule_1_trigger_message = (f"Rule 1: Drowsiness inferred. {RULE_1_NUMBER_OF_CONSECUTIVE_LONG_BLINKS} "
+            #                  f"consecutive 'long blink' outputs detected, ending at prediction "
+            #                  f"#{sequence_end_idx + 1}.")
+            rule_1_trigger_message = f"GOTCHA! Looks like you're losing focus."
             print(f"Rule 1 Condition Met: Sequence from {sequence_start_idx + 1} to {sequence_end_idx + 1}.")
 
             self.show_drowsiness_notification(rule_1_trigger_message)
-            self.notification_times.append(datetime.now())
             self.processed_until_svc_pred_index = sequence_end_idx + 1
 
     def check_rule_2(self):
@@ -318,7 +320,6 @@ class AttentionDetectorWidgetController(QObject):
                     f"Rule 1: Drowsiness inferred. Proportion of long blinks "
                     f"({proportion_long_blinks*100:.1f}%) exceeded 25% in the last {RULE_2_WINDOW_SEC}s."
                 )
-                self.notification_times.append(datetime.now())
     
     def update_frame(self):
         if self.cap is None or not self.cap.isOpened():
@@ -345,6 +346,7 @@ class AttentionDetectorWidgetController(QObject):
         image_height, image_width = frame.shape[:2]
         annotated_image = frame_rgb 
 
+        average_ear = 0.0
         if detection_result and face_landmarks_list:
             annotated_image = draw_face_landmarks_on_image(frame_rgb, face_landmarks_list)
 
@@ -352,77 +354,85 @@ class AttentionDetectorWidgetController(QObject):
 
             left_eye_coords = get_pixel_coords_from_landmarks(face_landmarks, LEFT_EYE_INDICES, image_width, image_height)
             right_eye_coords = get_pixel_coords_from_landmarks(face_landmarks, RIGHT_EYE_INDICES, image_width, image_height)
-
-            # Calculate EAR
-            average_ear = 0.0
+            
             if len(left_eye_coords) == 6 and len(right_eye_coords) == 6:
                 left_ear = calculate_ear(left_eye_coords)
                 right_ear = calculate_ear(right_eye_coords)
                 average_ear = (left_ear + right_ear) / 2.0
 
-            # Store EAR value
-            rounded_average_ear = round(average_ear, 5)
-            self.ear_values.append(rounded_average_ear)
-            self.all_ear_values.append(rounded_average_ear)
-            self.latest_ear_value.emit(rounded_average_ear)
+        # Store EAR value
+        rounded_average_ear = round(average_ear, 5)
+        self.ear_values.append(rounded_average_ear)
+        self.all_ear_values.append(rounded_average_ear)
+        self.latest_ear_value.emit(rounded_average_ear)
 
-            # Write EAR to file if open
-            if self.ear_calculation_result_file and not self.ear_calculation_result_file.closed:
-                self.ear_calculation_result_file.write(f"{average_ear:.4f}\n")
+        # Write EAR to file if open
+        # if self.ear_calculation_result_file and not self.ear_calculation_result_file.closed:
+        #     self.ear_calculation_result_file.write(f"{average_ear:.4f}\n")
+            
+        # SVC prediction
+        if (self.svc_model is not None and len(self.ear_values) == NUMBER_OF_EAR and self.frame_count % PREDICTION_INTERVAL_FRAME == 0):
+            # Prepare features: Convert deque to numpy array and reshape
+            ear_sample_array = np.array(list(self.ear_values)).reshape(1, -1) # Shape (1, 15)
+            
+            columns = [f"EAR {i + 1}" for i in range(NUMBER_OF_EAR)]
+            ear_sample_df = pd.DataFrame(ear_sample_array, columns=columns)
+
+            ear_classification_result = 0 # Default to a non-blink class
+
+            try:
+                # Predict using the loaded SVC model
+                prediction = self.svc_model.predict(ear_sample_df)
+                prediction_proba = self.svc_model.predict_proba(ear_sample_df) # Get probabilities
+
+                # Update the display text (customize based on your class labels)
+                ear_classification_result = prediction[0]
+                confidence = np.max(prediction_proba) * 100
+                # self.current_prediction = f"Status: {ear_classification_result} ({confidence:.1f}%)"
+
+                match(ear_classification_result):
+                    case 0:
+                        self.current_prediction = f"Focused 👁️👁️"
+                    case 1:
+                        self.current_prediction = f"Blinking 😌"
+                    case 2:
+                        self.current_prediction = f"Closed eye 💤"
+
+                # if self.ear_classification_result_file and not self.ear_classification_result_file.closed:
+                #     self.ear_classification_result_file.write(f"{ear_classification_result}\n")
                 
-            # SVC prediction
-            if (self.svc_model is not None and len(self.ear_values) == NUMBER_OF_EAR and self.frame_count % PREDICTION_INTERVAL_FRAME == 0):
-                # Prepare features: Convert deque to numpy array and reshape
-                ear_sample_array = np.array(list(self.ear_values)).reshape(1, -1) # Shape (1, 15)
-                
-                columns = [f"EAR {i + 1}" for i in range(NUMBER_OF_EAR)]
-                ear_sample_df = pd.DataFrame(ear_sample_array, columns=columns)
+                # Store prediction for
+                self.all_svc_predictions.append(ear_classification_result)
+                self.svc_prediction_count += 1
 
-                ear_classification_result = 0 # Default to a non-blink class
+            except Exception as e:
+                print(f"Error during SVC prediction: {e}")
+                self.current_prediction = "Status: Prediction Error"
 
-                try:
-                    # Predict using the loaded SVC model
-                    prediction = self.svc_model.predict(ear_sample_df)
-                    prediction_proba = self.svc_model.predict_proba(ear_sample_df) # Get probabilities
+            # Evaluate rules to determine drowsiness
+            # Rule 1 is checked for every new svc prediction made
+            self.check_rule_1()
 
-                    # Update the display text (customize based on your class labels)
-                    ear_classification_result = prediction[0]
-                    confidence = np.max(prediction_proba) * 100
-                    self.current_prediction = f"Status: {ear_classification_result} ({confidence:.1f}%)"
-
-                    if self.ear_classification_result_file and not self.ear_classification_result_file.closed:
-                        self.ear_classification_result_file.write(f"{ear_classification_result}\n")
-                    
-                    # Store prediction for
-                    self.all_svc_predictions.append(ear_classification_result)
-                    self.svc_prediction_count += 1
-
-                except Exception as e:
-                    print(f"Error during SVC prediction: {e}")
-                    self.current_prediction = "Status: Prediction Error"
-
-                # Evaluate rules to determine drowsiness
-                # Rule 1 is checked for every new svc prediction made
-                self.check_rule_1()
-
-                # Calculate the number of SVC predictions that should trigger rule 2 evaluation
-                number_of_predictions_per_second = self.actual_fps / PREDICTION_INTERVAL_FRAME
-                trigger_count_for_rule_2_eval = int(number_of_predictions_per_second * RULE_2_EVALUATION_INTERVAL_SEC)
-                
-                if trigger_count_for_rule_2_eval > 0 \
-                    and self.svc_prediction_count > 0 and \
-                    (self.svc_prediction_count - self.processed_until_svc_pred_index) % trigger_count_for_rule_2_eval == 0:
-                    self.check_rule_2()
+            # Calculate the number of SVC predictions that should trigger rule 2 evaluation
+            number_of_predictions_per_second = self.actual_fps / PREDICTION_INTERVAL_FRAME
+            trigger_count_for_rule_2_eval = int(number_of_predictions_per_second * RULE_2_EVALUATION_INTERVAL_SEC)
+            
+            if trigger_count_for_rule_2_eval > 0 \
+                and self.svc_prediction_count > 0 and \
+                (self.svc_prediction_count - self.processed_until_svc_pred_index) % trigger_count_for_rule_2_eval == 0:
+                self.check_rule_2()
 
         # Display Frame and Prediction 
         frame_bgr = cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR)
 
         # Add the prediction text overlay onto the BGR frame
-        cv2.putText(frame_bgr, self.current_prediction,
-                    (10, 30), # Position (top-left corner)
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, # Font type and scale
-                    (0, 255, 0) if "Error" not in self.current_prediction else (0, 0, 255), # Color (Green=OK, Red=Error)
-                    2, cv2.LINE_AA) # Thickness and line type
+        # cv2.putText(frame_bgr, self.current_prediction,
+        #             (10, 30), # Position (top-left corner)
+        #             cv2.FONT_HERSHEY_SIMPLEX, 1, # Font type and scale
+        #             (0, 255, 0) if "Error" not in self.current_prediction else (0, 0, 255), # Color (Green=OK, Red=Error)
+        #             2, cv2.LINE_AA) # Thickness and line type
+
+        self.view.eye_status_label.setText(self.current_prediction)
 
         # Convert BGR frame to QImage for PySide6 display
         qt_image = QImage(
@@ -442,22 +452,28 @@ class AttentionDetectorWidgetController(QObject):
         """Displays a drowsiness notification pop-up."""
 
         def handle_reenergize():
+            self.pause_intervals.append((self.notification_times[-1], datetime.now()))
             self.toggle_camera()
             sound.stop()
             self.page_selected.emit("mind_energizer")
             dialog_box.close()
         
         def handle_continue():
+            self.is_notification_end.emit()
+            self.pause_intervals.append((self.notification_times[-1], datetime.now()))
             sound.stop()
             dialog_box.close()
 
         def handle_stop():
+            self.pause_intervals.append((self.notification_times[-1], datetime.now()))
             sound.stop()
             dialog_box.close()
             QTimer.singleShot(0, self.stop_camera)
 
-        self.is_notification.emit()
+        self.is_notification_start.emit()
         # TODO: change message
+
+        self.notification_times.append(datetime.now())
 
         dialog_box = QDialog(self.view)
         dialog_box.setWindowTitle("Feeling sleepy?")
@@ -507,16 +523,17 @@ class AttentionDetectorWidgetController(QObject):
         )
     
     def create_session_metrics(self):
-        first_notification_time = self.notification_times[0] if self.notification_times else datetime.max
+        # first_notification_time = self.notification_times[0] if self.notification_times else datetime.max
         first_pause_start_time = self.pause_intervals[0][0] if self.pause_intervals else datetime.max
         # Choose the earliest of the two distraction times
-        earliest_distracted_time = min(first_notification_time, first_pause_start_time)
+        # earliest_distracted_time = min(first_notification_time, first_pause_start_time)
+        earliest_distracted_time = first_pause_start_time
         # If both were empty, fall back to end_time
         if earliest_distracted_time == datetime.max:
             earliest_distracted_time = self.end_time
         attention_span = (earliest_distracted_time - self.start_time).total_seconds()
 
-        number_of_attention_loss = len(self.notification_times) + len(self.pause_intervals)
+        number_of_attention_loss = len(self.pause_intervals)
 
         active_duration = self.end_time - self.start_time
         pause_duration = timedelta(0)
