@@ -32,7 +32,7 @@ RULE_1_WINDOW_SEC = 5
 RULE_1_NUMBER_OF_CONSECUTIVE_LONG_BLINKS = 5
 RULE_2_WINDOW_SEC = 60
 RULE_2_EVALUATION_INTERVAL_SEC = 5
-DEFAULT_FPS = 30.0 
+DEFAULT_FPS = 10.0 
 
 class AttentionDetectorWidgetController(QObject):
     latest_ear_value = Signal(float)
@@ -282,7 +282,7 @@ class AttentionDetectorWidgetController(QObject):
             # rule_1_trigger_message = (f"Rule 1: Drowsiness inferred. {RULE_1_NUMBER_OF_CONSECUTIVE_LONG_BLINKS} "
             #                  f"consecutive 'long blink' outputs detected, ending at prediction "
             #                  f"#{sequence_end_idx + 1}.")
-            rule_1_trigger_message = f"GOTCHA! Looks like you're losing focus."
+            rule_1_trigger_message = f"GOTCHA! Looks like you're losing focus.\nDon’t drift off yet! Stay in view and keep your eyes open." 
             print(f"Rule 1 Condition Met: Sequence from {sequence_start_idx + 1} to {sequence_end_idx + 1}.")
 
             self.show_drowsiness_notification(rule_1_trigger_message)
@@ -292,18 +292,18 @@ class AttentionDetectorWidgetController(QObject):
         """Check for rule 2 (proportion of long blinks (2) to total number of blinks) every RULE_2_EVALUATION_INTERVAL_SEC."""
         if not self.all_svc_predictions:
             return
-
-            
+        
         number_of_predictions_per_second = self.actual_fps / PREDICTION_INTERVAL_FRAME
         
         rule_2_window_size = int(number_of_predictions_per_second * RULE_2_WINDOW_SEC)
        
         # Get predictions from the last 60 seconds (or fewer if not enough history)
         sequence_start_idx = max(0, len(self.all_svc_predictions) - rule_2_window_size)
+        if sequence_start_idx < self.processed_until_svc_pred_index:
+            return  # Skip if the sequence starts before the last processed index
         current_window = self.all_svc_predictions[sequence_start_idx:]
 
         if len(current_window) < rule_2_window_size:
-            # print(f"Rule 2: Not enough predictions in current window. Current window size: {len(current_window)}")
             return
         
         number_of_long_blinks = current_window.count(2)  
@@ -316,9 +316,10 @@ class AttentionDetectorWidgetController(QObject):
             proportion_long_blinks = number_of_long_blinks / total_blinks
             # print(f"Rule 2 Eval: Proportion of long blinks = {proportion_long_blinks:.2f}")
             if proportion_long_blinks > 0.25:
+                self.processed_until_svc_pred_index = len(self.all_svc_predictions) 
                 self.show_drowsiness_notification(
-                    f"Rule 1: Drowsiness inferred. Proportion of long blinks "
-                    f"({proportion_long_blinks*100:.1f}%) exceeded 25% in the last {RULE_2_WINDOW_SEC}s."
+                    f"👀 You're blinking slow... {proportion_long_blinks*100:.1f}% of your recent blinks were long. "
+                    f"\nFeeling sleepy? Maybe stretch or grab a drink!"
                 )
     
     def update_frame(self):

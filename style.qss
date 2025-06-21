@@ -293,7 +293,7 @@ QMainWindow{
 #total_focus_duration_h2, #longest_focus_streak_h2{
     color: #005163;
     font-weight: 700;
-    font-size: 21px;
+    font-size: 15px;
 }
 
 #total_focus_duration_stat, #longest_focus_streak_stat{

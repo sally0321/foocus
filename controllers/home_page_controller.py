@@ -20,8 +20,8 @@ class HomePageController(QObject):
 
         total_attention_span = get_total_attention_span(user_id)
 
-        if total_attention_span / 360 > 1:
-            total_attention_span_in_hours = round(total_attention_span / 360, 1)
+        if total_attention_span / 3600 > 1:
+            total_attention_span_in_hours = round(total_attention_span / 3600, 1)
             self.view.total_focus_duration_stat.setText(str(total_attention_span_in_hours))
             self.view.total_focus_duration_h3.setText("Hours")
         else:
