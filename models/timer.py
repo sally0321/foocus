@@ -7,7 +7,7 @@ class Timer(QObject):
     def __init__(self, initial_time):
         super().__init__()
         self._initial_time = initial_time
-        self._remaining_time = self._initial_time
+        self._remaining_time = 0
         self.timer = QTimer()
         self.timer.timeout.connect(self._tick)
 

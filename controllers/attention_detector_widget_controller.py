@@ -16,6 +16,7 @@ from requests.exceptions import ConnectionError
 
 from views.attention_detector_widget import AttentionDetectorWidget
 from utils.eye_landmarks_utils import *
+from utils.gaze_utils import *
 from utils.sessiondb_utils import *
 from utils.cloud_sessiondb_utils import *
 from models.data import *
@@ -76,6 +77,7 @@ class AttentionDetectorWidgetController(QObject):
         self.current_prediction = DEFAULT_PREDICTION_TEXT # Display status
         self.ear_calculation_result_file = None # File to write EAR values
         self.ear_classification_result_file = None 
+        self.looking_direction = ("LEFT", "UP")
 
         self.last_notification_time = datetime.min # Initialize to allow the first notification
 
@@ -131,6 +133,7 @@ class AttentionDetectorWidgetController(QObject):
         self.notification_times = []
 
         self.session_id = str(uuid.uuid4())
+        self.looking_direction = ("LEFT", "UP")
 
     # def _open_ear_calculation_result_file(self, base_filename):
     #     """Opens a new output file for EAR values, closing the previous one if open."""
@@ -353,6 +356,12 @@ class AttentionDetectorWidgetController(QObject):
 
             face_landmarks = detection_result.face_landmarks[0]
 
+            l_corner, r_corner, l_gaze_points, r_gaze_points, l_gaze_point, r_gaze_point, avg_gaze_point, self.looking_direction = calculate_gaze(image_width, image_height, face_landmarks)
+            cv2.line(annotated_image, l_corner, tuple(np.ravel(l_gaze_points[2]).astype(np.int32)), (4, 191,191), 3)
+            cv2.line(annotated_image, r_corner, tuple(np.ravel(r_gaze_points[2]).astype(np.int32)), (4, 191,191), 3)
+            # cv2.circle(annotated_image, avg_gaze_point, 10, (0, 255, 0), -1)  # Green circle for average gaze
+            # cv2.circle(annotated_image, avg_gaze_point, 15, (255, 255, 255), 2)  # White border
+
             left_eye_coords = get_pixel_coords_from_landmarks(face_landmarks, LEFT_EYE_INDICES, image_width, image_height)
             right_eye_coords = get_pixel_coords_from_landmarks(face_landmarks, RIGHT_EYE_INDICES, image_width, image_height)
             
@@ -423,6 +432,7 @@ class AttentionDetectorWidgetController(QObject):
                 (self.svc_prediction_count - self.processed_until_svc_pred_index) % trigger_count_for_rule_2_eval == 0:
                 self.check_rule_2()
 
+        annotated_image = cv2.flip(annotated_image, 1)  # Flip the image horizontally for a mirror effect
         # Display Frame and Prediction 
         frame_bgr = cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR)
 
@@ -515,6 +525,36 @@ class AttentionDetectorWidgetController(QObject):
         sound.play()
 
         dialog_box.exec()
+
+    def show_completion_notification(message, duration_ms=3000, x=1000, y=50):
+        notif = QWidget()
+        notif.setWindowFlags(
+            Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+        )
+        notif.setAttribute(Qt.WA_TranslucentBackground)
+        notif.setAttribute(Qt.WA_ShowWithoutActivating)
+
+        label = QLabel(message)
+        label.setStyleSheet("""
+            QLabel {
+                background-color: #222;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 10px;
+                font-size: 14pt;
+            }
+        """)
+
+        layout = QVBoxLayout()
+        layout.addWidget(label)
+        notif.setLayout(layout)
+
+        notif.adjustSize()
+        notif.move(x, y)
+        notif.show()
+
+        # Automatically close the notification after a delay
+        QTimer.singleShot(duration_ms, notif.close)
     
     def create_session_log(self):
         return SessionLog(

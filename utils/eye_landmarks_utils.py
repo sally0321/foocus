@@ -59,8 +59,8 @@ def draw_face_landmarks_on_image(rgb_image, face_landmarks_list):
             image=annotated_image,
             landmark_list=left_eye_landmarks_proto,
             connections=None, 
-            landmark_drawing_spec=solutions.drawing_utils.DrawingSpec(color=(0, 255, 0), thickness=1, circle_radius=1),
-            connection_drawing_spec=solutions.drawing_utils.DrawingSpec(color=(0, 255, 0), thickness=1)
+            landmark_drawing_spec=solutions.drawing_utils.DrawingSpec(color=(147, 219, 224), thickness=1, circle_radius=1),
+            connection_drawing_spec=solutions.drawing_utils.DrawingSpec(color=(147, 219, 224), thickness=1)
         )
 
         # Draw right eye
@@ -68,8 +68,8 @@ def draw_face_landmarks_on_image(rgb_image, face_landmarks_list):
             image=annotated_image,
             landmark_list=right_eye_landmarks_proto,
             connections=None, 
-            landmark_drawing_spec=solutions.drawing_utils.DrawingSpec(color=(0, 255, 0), thickness=1, circle_radius=1),
-            connection_drawing_spec=solutions.drawing_utils.DrawingSpec(color=(0, 255, 0), thickness=1)
+            landmark_drawing_spec=solutions.drawing_utils.DrawingSpec(color=(147, 219, 224), thickness=1, circle_radius=1),
+            connection_drawing_spec=solutions.drawing_utils.DrawingSpec(color=(147, 219, 224), thickness=1)
         )
 
     return annotated_image
