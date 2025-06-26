@@ -3,6 +3,8 @@ from PySide6.QtCore import Signal, Qt
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtGui import QCursor
 
+from utils.utils import resource_path
+
 class SignInPage(QWidget):
 
     def __init__(self):
@@ -10,7 +12,7 @@ class SignInPage(QWidget):
 
         self.layout = QVBoxLayout(self)
         
-        self.banner_logo = QSvgWidget("resources/logos/foocus_banner_logo.svg")
+        self.banner_logo = QSvgWidget(resource_path("resources/logos/foocus_banner_logo.svg"))
         self.username_input = QLineEdit()
         self.password_input = QLineEdit()
         self.password_confirmation_input = QLineEdit()

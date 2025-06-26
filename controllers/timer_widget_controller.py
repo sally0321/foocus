@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QMessageBox
 
 from views.timer_widget import TimerWidget
 from models.timer import Timer
+from utils.utils import resource_path
 
 class TimerWidgetController(QObject):
     def __init__(self, initial_time):
@@ -39,12 +40,12 @@ class TimerWidgetController(QObject):
             if self.timer._remaining_time > 0:
                 self.timer.start()
                 self._is_running = True
-                self.view.play_pause_btn.setIcon(QIcon("resources/icons/pause_icon.png"))
+                self.view.play_pause_btn.setIcon(QIcon(resource_path("resources/icons/pause_icon.png")))
         else:
             # Pause timer
             self.timer.pause()
             self._is_running = False
-            self.view.play_pause_btn.setIcon(QIcon("resources/icons/play_icon.png"))
+            self.view.play_pause_btn.setIcon(QIcon(resource_path("resources/icons/play_icon.png")))
 
     def restart_timer(self):
         self.view.minutes_input.setDisabled(True)
@@ -52,7 +53,7 @@ class TimerWidgetController(QObject):
 
         self.timer.restart()
         self._is_running = True
-        self.view.play_pause_btn.setIcon(QIcon("resources/icons/pause_icon.png"))
+        self.view.play_pause_btn.setIcon(QIcon(resource_path("resources/icons/pause_icon.png")))
 
     def stop_timer(self):
         self.view.minutes_input.setEnabled(True)
@@ -60,14 +61,14 @@ class TimerWidgetController(QObject):
 
         self.timer.stop()
         self._is_running = False
-        self.view.play_pause_btn.setIcon(QIcon("resources/icons/play_icon.png"))
+        self.view.play_pause_btn.setIcon(QIcon(resource_path("resources/icons/play_icon.png")))
 
     def handle_timer_finished(self):
         self.view.minutes_input.setEnabled(True)
         self.view.seconds_input.setEnabled(True)
         
         self._is_running = False
-        self.view.play_pause_btn.setIcon(QIcon("resources/icons/play_icon.png"))
+        self.view.play_pause_btn.setIcon(QIcon(resource_path("resources/icons/play_icon.png")))
         # self.timer.reset()
 
     def update_time_display(self, seconds):

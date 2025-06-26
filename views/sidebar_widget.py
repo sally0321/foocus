@@ -2,6 +2,8 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QCursor
 
+from utils.utils import resource_path
+
 class SidebarWidget(QWidget):
 
     def __init__(self):
@@ -12,13 +14,13 @@ class SidebarWidget(QWidget):
         self.widget = QWidget()
         self.layout = QVBoxLayout(self.widget)
 
-        self.home_page_btn = QPushButton(icon=QIcon("resources/icons/home_icon.png"), text="Home")
-        self.focus_zone_page_btn = QPushButton(icon=QIcon("resources/icons/focus_zone_icon.png"), text="Focus Zone")
-        self.mind_energizer_page_btn = QPushButton(icon=QIcon("resources/icons/mind_energizer_icon.png"), text="Mind Energizer")
-        self.insights_page_btn = QPushButton(icon=QIcon("resources/icons/insights_icon.png"), text="Insights")
-        self.leaderboard_page_btn = QPushButton(icon=QIcon("resources/icons/leaderboard_icon.png"), text="Leaderboard")
+        self.home_page_btn = QPushButton(icon=QIcon(resource_path("resources/icons/home_icon.png")), text="Home")
+        self.focus_zone_page_btn = QPushButton(icon=QIcon(resource_path("resources/icons/focus_zone_icon.png")), text="Focus Zone")
+        self.mind_energizer_page_btn = QPushButton(icon=QIcon(resource_path("resources/icons/mind_energizer_icon.png")), text="Mind Energizer")
+        self.insights_page_btn = QPushButton(icon=QIcon(resource_path("resources/icons/insights_icon.png")), text="Insights")
+        self.leaderboard_page_btn = QPushButton(icon=QIcon(resource_path("resources/icons/leaderboard_icon.png")), text="Leaderboard")
 
-        self.user_btn = QPushButton(icon=QIcon("resources/icons/user_icon.png"), text="You")
+        self.user_btn = QPushButton(icon=QIcon(resource_path("resources/icons/user_icon.png")), text="You")
         self.user_btn.setDisabled(True)
 
         self.home_page_btn.setCursor(QCursor(Qt.PointingHandCursor))

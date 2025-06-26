@@ -3,6 +3,8 @@ from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton, QHBoxLa
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QCursor
 
+from utils.utils import resource_path
+
 class TimerWidget(QWidget):
     
     def __init__(self, initial_time):
@@ -23,9 +25,9 @@ class TimerWidget(QWidget):
 
         self.control_btns = QWidget()
         self.control_btns_layout = QHBoxLayout(self.control_btns)
-        self.play_pause_btn = QPushButton(icon=QIcon("resources/icons/play_icon.png"))
-        self.restart_btn = QPushButton(icon=QIcon("resources/icons/restart_icon.png"))
-        self.stop_btn = QPushButton(icon=QIcon("resources/icons/stop_icon.png"))
+        self.play_pause_btn = QPushButton(icon=QIcon(resource_path("resources/icons/play_icon.png")))
+        self.restart_btn = QPushButton(icon=QIcon(resource_path("resources/icons/restart_icon.png")))
+        self.stop_btn = QPushButton(icon=QIcon(resource_path("resources/icons/stop_icon.png")))
 
         self.minutes_input.setRange(0, 59)
         self.minutes_input.setSuffix(" min")

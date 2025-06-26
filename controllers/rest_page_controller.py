@@ -3,6 +3,7 @@ from PySide6.QtMultimedia import QSoundEffect
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QDialog
 
 from views.rest_page import RestPage
+from utils.utils import resource_path
 
 class RestPageController(QObject):
     is_notification = Signal()
@@ -43,7 +44,7 @@ class RestPageController(QObject):
         dialog_box_layout = QVBoxLayout(dialog_box)
         dialog_box_layout.addWidget(message_label)
 
-        sound = QSoundEffect(source=QUrl.fromLocalFile("resources/audio/noti_sound_effect.wav"))
+        sound = QSoundEffect(source=QUrl.fromLocalFile(resource_path("resources/audio/noti_sound_effect.wav")))
         sound.setVolume(1)
         sound.play()
 

@@ -6,6 +6,8 @@ from PySide6.QtCore import QTimer, Qt, QObject, Signal, QUrl
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimedia import QSoundEffect
 
+from utils.utils import resource_path
+
 from controllers.timer_widget_controller import TimerWidgetController
 
 class RestPage(QWidget):
@@ -38,7 +40,7 @@ class RestPage(QWidget):
         self.carousel_timer = QTimer(self)
         self.carousel_timer.start(10000)  # every 10 seconds
 
-        self.sound_effect = QSoundEffect(source=QUrl.fromLocalFile("C:\\Users\\sally\\Programming Projects\\CP\\5\\resources\\audio\\ocean_sound_effect.wav"))
+        self.sound_effect = QSoundEffect(source=QUrl.fromLocalFile(resource_path("resources/audio/ocean_sound_effect.wav")))
         self.sound_effect.setVolume(1)
         self.sound_effect.setLoopCount(-1)
 

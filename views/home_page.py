@@ -3,6 +3,8 @@ from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCursor
 
+from utils.utils import *
+
 class HomePage(QWidget):
     def __init__(self):
         super().__init__()
@@ -11,7 +13,7 @@ class HomePage(QWidget):
 
         self.foocus_monster_widget = QWidget()
         
-        self.foocus_eyes = QSvgWidget("resources/logos/foocus_eyes.svg", parent=self.foocus_monster_widget)
+        self.foocus_eyes = QSvgWidget(resource_path("resources/logos/foocus_eyes.svg"), parent=self.foocus_monster_widget)
         self.foocus_mouth = QLabel(parent=self.foocus_monster_widget)
         
         self.total_focus_duration = QWidget(parent=self.foocus_monster_widget)

@@ -10,6 +10,7 @@ import mediapipe as mp
 from mediapipe.tasks import python as mp_tasks
 from mediapipe.tasks.python import vision
 import joblib 
+import sklearn
 import cv2
 import pandas as pd
 from requests.exceptions import ConnectionError
@@ -21,11 +22,10 @@ from utils.sessiondb_utils import *
 from utils.cloud_sessiondb_utils import *
 from models.data import *
 from models.login_session import LoginSession
+from utils.utils import resource_path
 
-FACE_LANDMARKER_TASK_PATH = "resources/models/face_landmarker.task" 
-SVC_MODEL_PATH = "resources/models/svc_ear_model.joblib"
-EAR_CALCULATION_RESULT_DIR = "./ear_calculation_results"
-EAR_CLASSIFICATION_RESULT_DIR = "./ear_classification_results"
+FACE_LANDMARKER_TASK_PATH = resource_path("resources/models/face_landmarker.task") 
+SVC_MODEL_PATH = resource_path("resources/models/svc_ear_model.joblib")
 NUMBER_OF_EAR= 15 
 PREDICTION_INTERVAL_FRAME = 5 
 DEFAULT_PREDICTION_TEXT = ""
@@ -82,8 +82,8 @@ class AttentionDetectorWidgetController(QObject):
         self.last_notification_time = datetime.min # Initialize to allow the first notification
 
         # Ensure output directory exists
-        os.makedirs(EAR_CALCULATION_RESULT_DIR, exist_ok=True)
-        os.makedirs(EAR_CLASSIFICATION_RESULT_DIR, exist_ok=True)
+        # os.makedirs(EAR_CALCULATION_RESULT_DIR, exist_ok=True)
+        # os.makedirs(EAR_CLASSIFICATION_RESULT_DIR, exist_ok=True)
 
         self.timer.timeout.connect(self.update_frame)
 
@@ -101,7 +101,7 @@ class AttentionDetectorWidgetController(QObject):
             return detector
         
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to initialize Face Landmarker:\n{e}\nCheck the path: {FACE_LANDMARKER_TASK_PATH}")
+            QMessageBox.critical(self.view, "Error", f"Failed to initialize Face Landmarker:\n{e}\nCheck the path: {FACE_LANDMARKER_TASK_PATH}")
             return None 
 
     def _load_svc_model(self):
@@ -110,10 +110,10 @@ class AttentionDetectorWidgetController(QObject):
             model = joblib.load(SVC_MODEL_PATH)
             return model
         except FileNotFoundError:
-            QMessageBox.warning(self, "Warning", f"SVC Model file not found:\n{SVC_MODEL_PATH}\n\nReal-time classification will be disabled.")
+            QMessageBox.warning(self.view, "Warning", f"SVC Model file not found:\n{SVC_MODEL_PATH}\n\nReal-time classification will be disabled.")
             return None
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to load SVC model:\n{e}")
+            QMessageBox.critical(self.view, "Error", f"Failed to load SVC model:\n{e}")
             return None
 
     def _reset_state(self):
@@ -177,7 +177,7 @@ class AttentionDetectorWidgetController(QObject):
         self.cap = cv2.VideoCapture(0)
 
         if not self.cap.isOpened():
-            QMessageBox.critical(self, "Error", "Could not open default camera.")
+            QMessageBox.critical(self.view, "Error", "Could not open default camera.")
             self.cap = None
             return
         
@@ -520,7 +520,7 @@ class AttentionDetectorWidgetController(QObject):
         dialog_box_layout.addStretch(1)
         dialog_box_layout.addWidget(btns_holder)
 
-        sound = QSoundEffect(source=QUrl.fromLocalFile("resources/audio/noti_sound_effect.wav"))
+        sound = QSoundEffect(source=QUrl.fromLocalFile(resource_path("resources/audio/noti_sound_effect.wav")))
         sound.setVolume(1)
         sound.play()
 
