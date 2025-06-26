@@ -2,18 +2,14 @@ from datetime import datetime
 from dataclasses import asdict
 import json
 import requests
+import os
 
 from models.data import SessionMetrics
 
-server = 'my-projects-svr.database.windows.net'
-database = 'foocus'
-username = '21058375@imail.sunway.edu.my'
-password = '19121819=toSLRS'
-
 def insert_session_to_cloud_db(session_metrics: SessionMetrics):
-    URL = "https://foocus-apim.azure-api.net/foocus/insert-session-metrics"
+    URL = f"{os.getenv("URL")}/insert-session"
 
-    SUBSCRIPTION_KEY = "34942be976114df393e1e2e7db7ea322"
+    SUBSCRIPTION_KEY = os.getenv("SUBSCRIPTION_KEY")
 
     headers = {
     "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY
@@ -25,9 +21,9 @@ def insert_session_to_cloud_db(session_metrics: SessionMetrics):
     return json.loads(response.text)
 
 def get_weekly_top5_attention_span():
-    URL = "https://foocus-apim.azure-api.net/foocus/weekly-top5-attention-span"
+    URL = f"{os.getenv("URL")}/weekly-top5-attention-span"
 
-    SUBSCRIPTION_KEY = "34942be976114df393e1e2e7db7ea322"
+    SUBSCRIPTION_KEY = os.getenv("SUBSCRIPTION_KEY")
 
     headers = {
     "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY
