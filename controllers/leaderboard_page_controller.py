@@ -58,10 +58,10 @@ class LeaderboardPageController(QObject):
 
             if avg_attention_span < 60:
                 formatted_avg_attention_span = f"{avg_attention_span} seconds"
-            elif avg_attention_span < 360:
+            elif avg_attention_span < 3600:
                 formatted_avg_attention_span = f"{round(avg_attention_span / 60, 1)} minutes"
             else:
-                formatted_avg_attention_span = f"{round(avg_attention_span / 360, 1)} hours"
+                formatted_avg_attention_span = f"{round(avg_attention_span / 3600, 1)} hours"
             
             self.view.user_labels[idx].setText(username)
             self.view.attention_span_labels[idx].setText(formatted_avg_attention_span)

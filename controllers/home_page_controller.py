@@ -1,7 +1,7 @@
 from PySide6.QtCore import QObject, Signal
 
 from models.login_session import LoginSession
-from utils.sessiondb_utils import get_longest_attention_span, get_total_attention_span
+from utils.sessiondb_utils import get_longest_attention_span, get_total_focus_duration
 from views.home_page import HomePage
 
 class HomePageController(QObject):
@@ -18,15 +18,15 @@ class HomePageController(QObject):
         login_session = LoginSession()
         user_id = login_session.get_user_id()
 
-        total_attention_span = get_total_attention_span(user_id)
+        total_attention_span = get_total_focus_duration(user_id)
 
         if total_attention_span / 3600 > 1:
-            total_attention_span_in_hours = round(total_attention_span / 3600, 1)
-            self.view.total_focus_duration_stat.setText(str(total_attention_span_in_hours))
+            total_focus_duration_in_hours = round(total_attention_span / 3600, 1)
+            self.view.total_focus_duration_stat.setText(str(total_focus_duration_in_hours))
             self.view.total_focus_duration_h3.setText("Hours")
         else:
-            total_attention_span_in_minutes = round(total_attention_span / 60, 1)
-            self.view.total_focus_duration_stat.setText(str(total_attention_span_in_minutes))
+            total_focus_duration_in_minutes = round(total_attention_span / 60, 1)
+            self.view.total_focus_duration_stat.setText(str(total_focus_duration_in_minutes))
             self.view.total_focus_duration_h3.setText("Minutes")
 
         longest_attention_span = get_longest_attention_span(user_id)

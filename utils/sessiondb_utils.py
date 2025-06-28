@@ -140,14 +140,14 @@ def get_recent_attention_spans(user_id, limit):
         return attention_spans
     return None
 
-def get_total_attention_span(user_id):
+def get_total_focus_duration(user_id):
     query = QSqlQuery(QSqlDatabase.database(SESSION_METRICS_DB_CONNECTION_NAME))
-    query.prepare(f"SELECT SUM(attention_span) FROM {SESSION_METRICS_TABLE_NAME} WHERE user_id = ?")
+    query.prepare(f"SELECT SUM(focus_duration) FROM {SESSION_METRICS_TABLE_NAME} WHERE user_id = ?")
     query.addBindValue(user_id)
     query.exec()
     if query.next():
-        total_attention_span = query.value(0) or 0
-        return total_attention_span
+        total_focus_duration = query.value(0) or 0
+        return total_focus_duration
     return None
 
 # def get_metrics(session_id):
