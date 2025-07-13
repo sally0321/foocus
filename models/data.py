@@ -26,7 +26,7 @@ class SessionLog:
 class ActivityPageConfig:
     """Data class to hold the configuration for an activity page."""
     page_name: str
-    title: str
+    page_title: str
     description: str
     video_embed_link: str
     timer_duration: int

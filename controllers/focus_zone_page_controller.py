@@ -14,7 +14,7 @@ class FocusZonePageController(QObject):
         self.view = FocusZonePage()
 
         self.view.attention_detector.latest_ear_value.connect(self.view.focus_tracker.update_plot)
-        self.view.attention_detector.is_stop.connect(self.view.focus_tracker.reset_plot)
+        self.view.attention_detector.is_stop.connect(self.view.focus_tracker.reset_focus_tracker)
         self.view.attention_detector.is_stop.connect(self.view.timer.stop_timer)
         self.view.attention_detector.is_notification_start.connect(self.view.timer.toggle_timer)
         self.view.attention_detector.is_notification_end.connect(self.view.timer.toggle_timer)

@@ -6,35 +6,19 @@ class AttentionDetectorWidget(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.base = QVBoxLayout(self)
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
-        self.widget = QWidget()
-        self.layout = QVBoxLayout(self.widget)
-
+        # Display the classification of eye state (focused, blinking, sleeping)
         self.eye_status_label = QLabel("", alignment=Qt.AlignCenter)
+        self.eye_status_label.setObjectName("eye_status_label")
+        
+        # Display the camera feed video with annotated eye landmarks and eye gaze direction
         self.camera_feed_label = QLabel("Click start to activate the attention detector 📷", alignment=Qt.AlignCenter)
-        # self.control_btns = QWidget()
-        # self.control_btns_layout = QHBoxLayout(self.control_btns)
-        # self.start_pause_btn = QPushButton("Start")
-        # self.stop_btn = QPushButton("Stop")
-
         self.camera_feed_label.setFixedSize(600, 400)
-
-        # self.start_pause_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        # self.stop_btn.setCursor(QCursor(Qt.PointingHandCursor))
-
-        # self.control_btns_layout.addWidget(self.start_pause_btn, alignment=Qt.AlignHCenter)
-        # self.control_btns_layout.addWidget(self.stop_btn, alignment=Qt.AlignHCenter)
+        self.camera_feed_label.setObjectName("camera_feed_label")
 
         self.layout.addStretch()
         self.layout.addWidget(self.eye_status_label, alignment=Qt.AlignHCenter)
         self.layout.addWidget(self.camera_feed_label, alignment=Qt.AlignHCenter)
-        # self.layout.addWidget(self.control_btns, alignment=Qt.AlignHCenter)
         self.layout.addStretch()
-
-        self.widget.setObjectName("camera_feed")
-        self.eye_status_label.setObjectName("eye_status_label")
-
-        self.base.setContentsMargins(0, 0, 0, 0)
-
-        self.base.addWidget(self.widget)

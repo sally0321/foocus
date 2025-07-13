@@ -10,12 +10,15 @@ class HomePage(QWidget):
         super().__init__()
 
         self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
 
         self.foocus_monster_widget = QWidget()
+
+        self.foocus_monster_eyes = QSvgWidget(resource_path("resources/logos/foocus_eyes.svg"), parent=self.foocus_monster_widget)
+        self.foocus_monster_mouth = QLabel(parent=self.foocus_monster_widget)
         
-        self.foocus_eyes = QSvgWidget(resource_path("resources/logos/foocus_eyes.svg"), parent=self.foocus_monster_widget)
-        self.foocus_mouth = QLabel(parent=self.foocus_monster_widget)
-        
+        # Create the foocus monster tooth widget containing the total focus duration metric
         self.total_focus_duration = QWidget(parent=self.foocus_monster_widget)
         self.total_focus_duration_layout = QVBoxLayout(self.total_focus_duration)
         self.total_focus_duration_h1 = QLabel("Total")
@@ -29,6 +32,7 @@ class HomePage(QWidget):
         self.total_focus_duration_layout.addWidget(self.total_focus_duration_h3, alignment=Qt.AlignHCenter)
         self.total_focus_duration_layout.addStretch(1)
 
+        # Create the foocus monster tooth widget containing the longest focus streak metric
         self.longest_focus_streak = QWidget(parent=self.foocus_monster_widget)
         self.longest_focus_streak_layout = QVBoxLayout(self.longest_focus_streak)
         self.longest_focus_streak_h1 = QLabel("Longest")
@@ -42,20 +46,15 @@ class HomePage(QWidget):
         self.longest_focus_streak_layout.addWidget(self.longest_focus_streak_h3, alignment=Qt.AlignHCenter)
         self.longest_focus_streak_layout.addStretch(1)
 
-        self.btn_widget = QWidget()
-        self.btn_widget_layout = QVBoxLayout(self.btn_widget)
-        self.focus_now_btn = QPushButton("Focus Now")
-        self.focus_now_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        self.btn_widget_layout.addWidget(self.focus_now_btn)
-
-        self.foocus_eyes.setGeometry(270, 60, 750, 300)
-        self.foocus_mouth.setGeometry(0, 400, 1500, 200)
+        # Set the position of the eyes, mouth, and teeth widgets within the foocus monster widget
+        self.foocus_monster_eyes.setGeometry(270, 60, 750, 300)
+        self.foocus_monster_mouth.setGeometry(0, 400, 1500, 200)
         self.total_focus_duration.setGeometry(370, 400, 250, 250)
         self.longest_focus_streak.setGeometry(670, 400, 250, 250)
 
         self.foocus_monster_widget.setObjectName("foocus_monster")
-        self.foocus_eyes.setObjectName("foocus_eyes")
-        self.foocus_mouth.setObjectName("foocus_mouth")
+        self.foocus_monster_eyes.setObjectName("foocus_eyes")
+        self.foocus_monster_mouth.setObjectName("foocus_mouth")
 
         self.total_focus_duration.setObjectName("total_focus_duration")
         self.total_focus_duration_h1.setObjectName("total_focus_duration_h1")
@@ -68,17 +67,19 @@ class HomePage(QWidget):
         self.longest_focus_streak_stat.setObjectName("longest_focus_streak_stat")
         self.longest_focus_streak_h3.setObjectName("longest_focus_streak_h3")
 
+        # Create the focus now button widget as a shortcut to the Focus Zone page
+        self.btn_widget = QWidget()
         self.btn_widget.setObjectName("btn_widget")
-        self.focus_now_btn.setObjectName("focus_now_btn")
-
+        self.btn_widget_layout = QVBoxLayout(self.btn_widget)
         self.btn_widget_layout.setContentsMargins(0, 0, 0, 0)
         self.btn_widget_layout.setSpacing(0)
-
+        self.focus_now_btn = QPushButton("Focus Now")
+        self.focus_now_btn.setObjectName("focus_now_btn")
+        self.focus_now_btn.setCursor(QCursor(Qt.PointingHandCursor))
+        self.btn_widget_layout.addWidget(self.focus_now_btn)
+        
         self.layout.addWidget(self.foocus_monster_widget)
         self.layout.addWidget(self.btn_widget)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
-
 
 
         

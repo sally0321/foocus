@@ -8,7 +8,10 @@ class MindEnergizerPage(QWidget):
         super().__init__()
 
         self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
 
+        # Create widgets to hold the buttons for selecting the category of mind energizer
         self.mindfulness_activity_widget = QWidget()
         self.mindfulness_activity_widget_layout = QVBoxLayout(self.mindfulness_activity_widget)
 
@@ -18,6 +21,7 @@ class MindEnergizerPage(QWidget):
         self.rest_widget = QWidget()
         self.rest_widget_layout = QVBoxLayout(self.rest_widget)
 
+        # Create buttons for each mind energizer category
         self.mindfulness_activity_btn = QPushButton("Mindfulness Activity")
         self.physical_activity_btn = QPushButton("Physical Exercise")
         self.rest_btn = QPushButton("Take a Break")
@@ -42,5 +46,4 @@ class MindEnergizerPage(QWidget):
         self.layout.addWidget(self.rest_widget)
         self.layout.addStretch(2)
 
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
+        

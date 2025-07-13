@@ -44,7 +44,7 @@ class MainWindowController(QObject):
                     login_session = LoginSession()
                     username = login_session.get_username()
                     self.main_window.home_page.load_home_page()
-                    self.main_window.sidebar.view.user_btn.setText(username)
+                    self.main_window.sidebar.view.user_profile_btn.setText(username)
                 case "log_in":
                     login_session = LoginSession()
                     login_session.clear_user()

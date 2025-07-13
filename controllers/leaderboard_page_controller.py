@@ -13,7 +13,7 @@ class LeaderboardPageController(QObject):
         self.view = LeaderboardPage()
 
     def load_leaderboard(self):
-        self.view.subtitle_label.setText("") 
+        self.view.week_period_label.setText("") 
 
         try: 
             get_weekly_top5_attention_span_response = get_weekly_top5_attention_span()
@@ -43,7 +43,7 @@ class LeaderboardPageController(QObject):
         end_date = data['week_period']['end']
         top5_user_data = data['top5_users'] 
 
-        self.view.subtitle_label.setText(f"Week {start_date} to {end_date}") 
+        self.view.week_period_label.setText(f"Week {start_date} to {end_date}") 
 
         login_session = LoginSession()
         current_user_id = login_session.get_user_id()

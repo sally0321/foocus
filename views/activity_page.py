@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton, QHBoxLayout
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCursor, QIcon
 from PySide6.QtWebEngineWidgets import QWebEngineView
@@ -15,25 +15,32 @@ class ActivityPage(QWidget):
         self.page_config = activity_page_config
 
         self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
 
-        self.page_title = QLabel(activity_page_config.title, alignment=Qt.AlignCenter)
+        self.page_title = QLabel(activity_page_config.page_title, alignment=Qt.AlignCenter)
         self.page_title.setProperty("role", "activity_page_title")
+        self.layout.addWidget(self.page_title)
+        
         self.back_btn = QPushButton(icon=QIcon(resource_path("resources/icons/back_icon.png")), parent=self.page_title) 
         self.back_btn.move(10, 10) 
         self.back_btn.setObjectName("back_btn")
-        self.layout.addWidget(self.page_title)
+        self.back_btn.setCursor(QCursor(Qt.PointingHandCursor))
         
+        # Create the video embed view
         self.video = QWebEngineView(url=QUrl(activity_page_config.video_embed_link))
         self.layout.addWidget(self.video)
         
-        if activity_page_config.text:
-            self.description = QLabel(activity_page_config.text, alignment=Qt.AlignCenter, wordWrap=True)
+        # If the description is provided, create the description label
+        if activity_page_config.description:
+            self.description = QLabel(activity_page_config.description, alignment=Qt.AlignCenter, wordWrap=True)
             self.description.setProperty("role", "activity_page_description")
             self.layout.addWidget(self.description)
+        
+        # If the timer duration is provided, create the timer widget
         if activity_page_config.timer_duration:
             self.timer = TimerWidgetController(activity_page_config.timer_duration)
             self.timer_widget = self.timer.view
             self.layout.addWidget(self.timer_widget)
         
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
+        

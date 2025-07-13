@@ -161,34 +161,9 @@ QMainWindow{
     height: 12px;
 }
 
-#camera_feed{
-    background-color: #f1efe7;
-}
-
-#camera_feed QLabel{
+#camera_feed_label, #eye_status_label{
     color: #015c6a;
     font-size: 18px;
-}
-
-#camera_feed QPushButton{
-    width: 120px;
-    height: 33px;
-    background-color: #037f8c;
-    border: none;
-    border-radius: 5px;
-    font-size: 15px;
-}
-
-#camera_feed QPushButton:hover{
-    background-color: #005163; 
-    border: none;
-    border-radius: 5px;
-}
-
-#camera_feed QPushButton:pressed{
-    background-color: #015c6a; 
-    border: none;
-    border-radius: 5px;
 }
 
 #focus_zone_top_widget{
@@ -424,7 +399,7 @@ QLabel[role="activity_page_description"]{
     color: #005163;
 }
 
-#timer_holder_widget{
+#focus_zone_timer_holder_widget{
     background-color: #f1efe7;
 }
 
@@ -461,7 +436,7 @@ QWidget[role="focus_zone_timer"]{
     font-weight: 800;
 }
 
-#leaderboard_page_subtitle{
+#week_period_label{
     color: #005163;
     font-size: 30px;
     font-weight: 800;
@@ -534,7 +509,7 @@ QLabel[role="attention_span_label"]{
     max-width: 300px;
 }
 
-#leaderboard_page_spacing_label{
+#leaderboard_spacing_label{
     min-width: 50px;
     max-width: 50px;
 }

@@ -20,7 +20,7 @@ class InsightsPage(QWidget):
         self.longest_attention_span_layout = QVBoxLayout(self.longest_attention_span)
         self.unfocus_frequency_layout = QVBoxLayout(self.unfocus_frequency)
 
-        #self.attention_span_history_h1 = QLabel("Focus History")
+        # Create the attention span history figure and canvas that display the 5 most recent attention spans
         self.attention_span_history_figure = Figure(figsize=(5, 3))
         self.attention_span_history_canvas = FigureCanvas(self.attention_span_history_figure)
         self.attention_span_history_ax = self.attention_span_history_figure.add_subplot(111)
@@ -30,15 +30,15 @@ class InsightsPage(QWidget):
         self.attention_span_history_ax.set_xlim(left=0)
         self.attention_span_history_ax.set_ylim(bottom=0)
         self.attention_span_history_figure.tight_layout()
-        #self.attention_span_history_layout.addWidget(self.attention_span_history_h1)
         self.attention_span_history_layout.addWidget(self.attention_span_history_canvas)
 
-        # set figure bg to transparent
+        # Set figure background to transparent
         self.attention_span_history_figure.patch.set_facecolor('none')
         self.attention_span_history_ax.set_facecolor('none')
         self.attention_span_history_canvas.setAttribute(Qt.WA_TranslucentBackground)
         self.attention_span_history_canvas.setStyleSheet("background: transparent;")
 
+        # Create the average attention span widget
         self.avg_attention_span_h1 = QLabel("Average")
         self.avg_attention_span_h2 = QLabel("Attention Span")
         self.avg_attention_span_stat = QLabel("18")
@@ -50,6 +50,7 @@ class InsightsPage(QWidget):
         self.avg_attention_span_layout.addWidget(self.avg_attention_span_h3, alignment=Qt.AlignHCenter)
         self.avg_attention_span_layout.addStretch(1)
 
+        # Create the longest attention span widget
         self.longest_attention_span_h1 = QLabel("Longest")
         self.longest_attention_span_h2 = QLabel("Attention Span")
         self.longest_attention_span_stat = QLabel("21")
@@ -61,10 +62,13 @@ class InsightsPage(QWidget):
         self.longest_attention_span_layout.addWidget(self.longest_attention_span_h3, alignment=Qt.AlignHCenter)
         self.longest_attention_span_layout.addStretch(1)
 
+        # Create the unfocus frequency widget containing the highest and lowest unfocus frequency widgets
         self.unfocus_frequency_h1 = QLabel("Frequency")
         self.unfocus_frequency_h2 = QLabel("of losing focus per session")
         self.unfocus_frequency_h2.setWordWrap(True)
         self.unfocus_frequency_h2.setAlignment(Qt.AlignCenter)
+        
+        # Create the highest unfocus frequency widget
         self.unfocus_frequency_highest_widget = QWidget()
         self.unfocus_frequency_highest_widget_layout = QVBoxLayout(self.unfocus_frequency_highest_widget)
         self.unfocus_frequency_highest_h3 = QLabel("Highest")
@@ -73,6 +77,8 @@ class InsightsPage(QWidget):
         self.unfocus_frequency_highest_widget_layout.addWidget(self.unfocus_frequency_highest_h3, alignment=Qt.AlignHCenter)
         self.unfocus_frequency_highest_widget_layout.addWidget(self.unfocus_frequency_highest_stat, alignment=Qt.AlignHCenter)
         self.unfocus_frequency_highest_widget_layout.addStretch(1)
+        
+        # Create the lowest unfocus frequency widget
         self.unfocus_frequency_lowest_widget = QWidget()
         self.unfocus_frequency_lowest_widget_layout = QVBoxLayout(self.unfocus_frequency_lowest_widget)
         self.unfocus_frequency_lowest_h3 = QLabel("Lowest")
@@ -81,6 +87,7 @@ class InsightsPage(QWidget):
         self.unfocus_frequency_lowest_widget_layout.addWidget(self.unfocus_frequency_lowest_h3, alignment=Qt.AlignHCenter)
         self.unfocus_frequency_lowest_widget_layout.addWidget(self.unfocus_frequency_lowest_stat, alignment=Qt.AlignHCenter)        
         self.unfocus_frequency_lowest_widget_layout.addStretch(1)
+        
         self.unfocus_frequency_layout.addStretch(1)
         self.unfocus_frequency_layout.addWidget(self.unfocus_frequency_h1, alignment=Qt.AlignHCenter)
         self.unfocus_frequency_layout.addWidget(self.unfocus_frequency_h2, alignment=Qt.AlignHCenter)
