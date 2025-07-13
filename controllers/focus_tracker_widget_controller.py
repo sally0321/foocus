@@ -12,6 +12,7 @@ class FocusTrackerWidgetController(QObject):
     def __init__(self):
         super().__init__()
 
+        # Initialize focus focus tracker widget view
         self.view = FocusTrackerWidget()
 
         # Store the last MAX_POINTS EAR values only
