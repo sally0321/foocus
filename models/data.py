@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 @dataclass
 class SessionMetrics:
+    """Data class to hold metrics calculated for each focus session."""
     session_id: str
     user_id: str
     username: str
@@ -16,14 +17,16 @@ class SessionMetrics:
 
 @dataclass
 class SessionLog:
+    """Data class to hold the log of each focus session."""
     session_id: str
     svc_predictions: list[int]
     ear_values: list[float]
 
 @dataclass
 class ActivityPageConfig:
+    """Data class to hold the configuration for an activity page."""
+    page_name: str
     title: str
-    text: str
+    description: str
     video_embed_link: str
     timer_duration: int
-    page_name: str
