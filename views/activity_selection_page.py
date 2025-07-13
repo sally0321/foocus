@@ -1,8 +1,9 @@
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton, QHBoxLayout
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QCursor
+from PySide6.QtGui import QCursor, QIcon
 
 from models.data import ActivityPageConfig
+from utils.utils import resource_path
 
 class ActivitySelectionPage(QWidget):
     def __init__(self, page_title, activity_page_configs: list[ActivityPageConfig]):
@@ -12,6 +13,9 @@ class ActivitySelectionPage(QWidget):
         
         self.page_title = QLabel(page_title, alignment=Qt.AlignCenter)
         self.page_title.setProperty("role", "activity_selection_page_title")
+        self.back_btn = QPushButton(icon=QIcon(resource_path("resources/icons/back_icon.png")), parent=self.page_title) 
+        self.back_btn.move(10, 10) 
+        self.back_btn.setObjectName("back_btn")
         self.layout.addWidget(self.page_title)
         self.layout.addStretch(2)
 

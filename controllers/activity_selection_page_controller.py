@@ -20,3 +20,4 @@ class ActivitySelectionPageController(QObject):
 
         activity_pages = [activity_page_config.page_name for activity_page_config in activity_page_configs]
         self.view.pick_for_me_btn.clicked.connect(lambda: self.page_selected.emit(random.choice(activity_pages)))
+        self.view.back_btn.clicked.connect(lambda: self.page_selected.emit("back"))

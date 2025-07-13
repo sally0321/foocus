@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6.QtCore import QTimer, Qt, QObject, Signal, QUrl
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimedia import QSoundEffect
+from PySide6.QtGui import QCursor, QIcon
 
 from utils.utils import resource_path
 
@@ -51,6 +52,9 @@ class RestPage(QWidget):
         self.top_widget_layout.addStretch(2)
         self.top_widget_layout.addWidget(self.sound_toggle, alignment=Qt.AlignHCenter)
         self.top_widget_layout.addStretch(1)
+        self.back_btn = QPushButton(icon=QIcon(resource_path("resources/icons/back_icon.png")), parent=self.top_widget) 
+        self.back_btn.move(10, 10) 
+        self.back_btn.setObjectName("back_btn")
 
         self.timer = TimerWidgetController(300)
         self.timer_widget = self.timer.view

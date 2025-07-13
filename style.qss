@@ -10,7 +10,7 @@ QMainWindow{
     background-color: #037f8c;
 }
 
-#sidebar QPushButton{
+#sidebar_btn{
     padding: 10px;
     background-color: #037f8c;
     border: 2px solid transparent;
@@ -20,12 +20,17 @@ QMainWindow{
     text-align: left;
 }
 
-#sidebar QPushButton:hover{
+#sidebar_btn:hover{
     background-color: #005163; 
 }
 
-#sidebar QPushButton:pressed{
+#sidebar_btn:pressed{
     background-color: #015c6a; 
+}
+
+#sidebar_logout_btn{
+    padding: 0px;
+    border-radius: 20px;
 }
 
 #log_in_btn, #sign_in_btn{
@@ -544,4 +549,17 @@ QLabel[role="attention_span_label"]{
     border-radius: 5px;
     font-size: 15px;
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #005163, stop: 1 #037f8c);
+}
+
+#back_btn {
+    min-width: 50px;
+    max-width: 50px;
+    min-height: 50px;
+    max-height: 50px;
+    border-radius: 25px;
+    background-color: #f1efe7;
+}
+
+#back_btn:hover {
+    background-color: #e3e0d4;
 }

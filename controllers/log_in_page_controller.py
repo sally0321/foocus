@@ -38,5 +38,7 @@ class LogInPageController(QObject):
         login_session.set_user(user_id, username)
         
         self.page_selected.emit("main")
+        self.view.username_input.clear()
+        self.view.password_input.clear()
         
             

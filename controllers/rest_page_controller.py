@@ -7,6 +7,7 @@ from utils.utils import resource_path
 
 class RestPageController(QObject):
     is_notification = Signal()
+    page_selected = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -17,6 +18,8 @@ class RestPageController(QObject):
         self.view.sound_toggle.stateChanged.connect(self.toggle_sound)
         self.view.timer.timer.finished.connect(self.show_notification)
         self.view.timer_widget.stop_btn.clicked.connect(lambda: self.view.sound_toggle.setChecked(False))
+
+        self.view.back_btn.clicked.connect(lambda: self.page_selected.emit("back"))
 
     def next_suggestion(self):
         self.view.current_index = (self.view.current_index + 1) % len(self.view.suggestions)

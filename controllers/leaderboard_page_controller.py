@@ -45,26 +45,33 @@ class LeaderboardPageController(QObject):
 
         self.view.subtitle_label.setText(f"Week {start_date} to {end_date}") 
 
-        for idx, user_data in enumerate(top5_user_data):
-            username = user_data['username']
-            user_id = user_data['user_id']
-            avg_attention_span = user_data["avg_attention_span"]
+        login_session = LoginSession()
+        current_user_id = login_session.get_user_id()
+        current_username = login_session.get_username()
 
-            login_session = LoginSession()
-            current_user_id = login_session.get_user_id()
+        for i in range(5):
+            user_data = top5_user_data[i] if i < len(top5_user_data) else {}
+            username = user_data.get('username', 'Awaiting legend...')
+            user_id = user_data.get('user_id', '')
+            avg_attention_span = user_data.get('avg_attention_span', 0)
 
             if user_id == current_user_id:
-                username = "You"
+                username = f"{username} (You)"
 
-            if avg_attention_span < 60:
+            if avg_attention_span == 0:
+                formatted_avg_attention_span = ""
+            elif avg_attention_span < 60:
                 formatted_avg_attention_span = f"{avg_attention_span} seconds"
             elif avg_attention_span < 3600:
                 formatted_avg_attention_span = f"{round(avg_attention_span / 60, 1)} minutes"
             else:
                 formatted_avg_attention_span = f"{round(avg_attention_span / 3600, 1)} hours"
             
-            self.view.user_labels[idx].setText(username)
-            self.view.attention_span_labels[idx].setText(formatted_avg_attention_span)
+            self.view.user_labels[i].setText(username)
+            self.view.attention_span_labels[i].setText(formatted_avg_attention_span)
+            
+
+            
            
     
         

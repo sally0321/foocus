@@ -1,7 +1,10 @@
-from PySide6.QtCore import QObject, Signal, Qt, QTimer
+from PySide6.QtCore import QObject, Signal, Qt, QTimer, QUrl
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QApplication
+from PySide6.QtMultimedia import QSoundEffect
+from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 
 from views.focus_zone_page import FocusZonePage
+from utils.utils import resource_path
 
 class FocusZonePageController(QObject):
 
@@ -22,6 +25,14 @@ class FocusZonePageController(QObject):
         self.view.timer.timer.finished.connect(self.show_completion_notification) # show notification before stopping camera which resets the states
         self.view.timer.timer.finished.connect(self.stop_camera)
 
+        # self.sound_effect = QSoundEffect()
+        # self.sound_effect.setSource(QUrl.fromLocalFile(resource_path("resources/audio/completion_noti_sound_effect.wav")))
+        # self.sound_effect.setVolume(0.5)
+        self.audio_output = QAudioOutput()
+        self.media_player = QMediaPlayer()
+        self.media_player.setAudioOutput(self.audio_output)
+        self.media_player.setSource(QUrl.fromLocalFile(resource_path("resources/audio/completion_noti_sound_effect.wav")))
+
     def toggle_camera(self):
         if self.view.timer.timer._remaining_time > 0:
             self.view.attention_detector.toggle_camera()
@@ -35,7 +46,7 @@ class FocusZonePageController(QObject):
             self.view.attention_detector.stop_camera()
             self.view.attention_detector.start_camera()
 
-    def show_completion_notification(self, duration_ms=4000):
+    def show_completion_notification(self, duration_ms=5000):
         looking_direction = self.view.attention_detector.looking_direction
         print(f"Looking direction: {looking_direction}")
         match (looking_direction):
@@ -65,10 +76,13 @@ class FocusZonePageController(QObject):
         layout = QVBoxLayout()
         layout.addWidget(label)
         self.notif.setLayout(layout)
-
         self.notif.adjustSize()
         self.notif.move(x, y)
+
         self.notif.show()
+        self.audio_output.setVolume(0.1)
+        self.media_player.setPosition(0)  # Restart from beginning
+        self.media_player.play()
 
         # Automatically close the notification after a delay
         QTimer.singleShot(duration_ms, lambda: (self.notif.close(), setattr(self, 'notif', None)))
