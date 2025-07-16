@@ -5,6 +5,7 @@ from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 
 from views.focus_zone_page import FocusZonePage
 from utils.utils import resource_path
+from datetime import datetime
 
 class FocusZonePageController(QObject):
 
@@ -25,7 +26,10 @@ class FocusZonePageController(QObject):
         self.view.timer.timer.finished.connect(self.stop_camera)
 
         # Connect the button events to the methods
+        self.view.timer.view.play_pause_btn.clicked.disconnect(self.view.timer.toggle_timer) # Disconnect toggle_timer to trigger the toggle_camera first due to the delay in switching on the camera
         self.view.timer.view.play_pause_btn.clicked.connect(self.toggle_camera)
+        self.view.timer.view.play_pause_btn.clicked.connect(self.view.timer.toggle_timer) # Toggle the timer after toggling the camera so the timer starts after the camera is ready
+
         self.view.timer.view.stop_btn.clicked.connect(self.stop_camera)
         self.view.timer.view.restart_btn.clicked.connect(self.restart_camera)
         
@@ -38,8 +42,7 @@ class FocusZonePageController(QObject):
     def toggle_camera(self):
         """Toggle the camera on or off based on the timer state."""
 
-        if self.view.timer.timer._remaining_time > 0:
-            self.view.attention_detector.toggle_camera()
+        self.view.attention_detector.toggle_camera()
     
     def stop_camera(self):
         """Stop the camera when the timer is stopped."""

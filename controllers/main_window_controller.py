@@ -53,8 +53,8 @@ class MainWindowController(QObject):
                     # Get the current user's information through the previously created login session singleton
                     login_session = LoginSession()
                     username = login_session.get_username()
-                    # Reload home page with the latest user statistics
-                    self.main_window.home_page.load_home_page()
+                    # Reload home page with the latest user statistics and switch to home page in the stacked widget
+                    self.switch_content_page("home")
                     # Set the username to show the logged in user session
                     self.main_window.sidebar.view.user_profile_btn.setText(username)
                 case "log_in":
@@ -82,6 +82,8 @@ class MainWindowController(QObject):
         if content_page:
             # Save page navigation history
             self.visited_content_pages.append(content_page_name)
+            # Rest the timer if available on the content page
+            self.reset_timer_if_available(content_page)
             
             match (content_page_name):
                 case "home":
@@ -116,3 +118,17 @@ class MainWindowController(QObject):
         self.main_window.showMaximized()  
         self.main_window.raise_()      # Bring window to front
         self.main_window.activateWindow()  # Give focus
+
+    def reset_timer_if_available(self, content_page):
+        """Reset the timer if it is available on the content page."""
+        
+        try:
+            content_page.timer.timer.reset()
+            minutes = content_page.timer.timer.DEFAULT_INITIAL_TIME // 60
+            seconds = content_page.timer.timer.DEFAULT_INITIAL_TIME % 60
+            content_page.timer.view.minutes_input.setValue(minutes)
+            content_page.timer.view.seconds_input.setValue(seconds)
+        except AttributeError as e:
+            print(e)
+            pass
+            
