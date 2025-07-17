@@ -10,22 +10,24 @@ from utils.userdb_utils import initialize_userdb
 from utils.sessiondb_utils import initialize_session_metrics_db
 from utils.utils import *
 
-# set unique app id for taskbar icon display
+# Set unique app id for taskbar icon display
 myappid = 'foocus.' 
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 app = QApplication(sys.argv)
 
+# Set the window icon
 icon = QIcon(resource_path("resources/logos/foocus_logo.ico"))
 app.setWindowIcon(icon)
 
+# Adjust URLs in the stylesheet to point to the correct resources
 with open(resource_path("style.qss"), "r") as f:
-    # app.setStyleSheet(f.read())
     style = f.read()
-
 style = adjust_qss_urls(style)
+
 app.setStyleSheet(style)
 
+# Initialize and connect to SQLite database
 initialize_userdb()
 initialize_session_metrics_db()
 

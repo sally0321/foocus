@@ -1,10 +1,10 @@
-import os
 from collections import deque
 from datetime import datetime, timedelta
+import uuid
 
 from PySide6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget,  QMessageBox, QDialog, QHBoxLayout
 from PySide6.QtCore import QTimer, Qt, QObject, Signal, QUrl
-from PySide6.QtMultimedia import QSoundEffect
+from PySide6.QtMultimedia import QSoundEffect, QMediaPlayer, QAudioOutput
 from PySide6.QtGui import QImage, QPixmap, QCursor
 import mediapipe as mp
 from mediapipe.tasks import python as mp_tasks
@@ -26,69 +26,75 @@ from utils.utils import resource_path
 
 FACE_LANDMARKER_TASK_PATH = resource_path("resources/models/face_landmarker.task") 
 SVC_MODEL_PATH = resource_path("resources/models/svc_ear_model.joblib")
-NUMBER_OF_EAR= 15 
-PREDICTION_INTERVAL_FRAME = 5 
-DEFAULT_PREDICTION_TEXT = ""
-RULE_1_WINDOW_SEC = 5
-RULE_1_NUMBER_OF_CONSECUTIVE_LONG_BLINKS = 5
-RULE_2_WINDOW_SEC = 60
-RULE_2_EVALUATION_INTERVAL_SEC = 5
-DEFAULT_FPS = 10.0 
+NUMBER_OF_EAR= 15 # Number of EAR values to consider for SVC prediction
+PREDICTION_INTERVAL_FRAME = 5 # Make a prediction every 5 frames
+DEFAULT_PREDICTION_TEXT = "" # Default eye state classification text for display to user
+RULE_1_WINDOW_SEC = 5 # Evaluate Rule 1 every 5 seconds
+RULE_1_NUMBER_OF_CONSECUTIVE_LONG_BLINKS = 5 # Number of consecutive long blinks to trigger Rule 1
+RULE_2_WINDOW_SEC = 60 # The window size for Rule 2 evaluation in seconds
+RULE_2_EVALUATION_INTERVAL_SEC = 5 # Evaluate Rule 2 every 5 seconds
+DEFAULT_FPS = 10.0 # Default FPS for the camera feed after considering processing overhead
+
+# Define the eye states
+EYE_OPEN = 0
+EYE_BLINK = 1
+EYE_CLOSED = 2
 
 class AttentionDetectorWidgetController(QObject):
-    latest_ear_value = Signal(float)
-    is_notification_start = Signal()
-    is_notification_end = Signal()
-    page_selected = Signal(str)
-    is_stop = Signal()
+    latest_ear_value = Signal(float) # Signal to indicate the latest EAR value
+    is_notification_start = Signal() # Signal to indicate a notification is starting for the focus zone page controller to pause the timer during the notification pop up
+    is_notification_end = Signal() # Signal to indicate a notification has ended for the focus zone page controller to continue the tiemr
+    page_selected = Signal(str) # Signal to notify the main window controller about page changes
+    is_stop = Signal() # Signal to indicate the attention detector has stopped for the focus zone page controller to stop the timer and reset the focus tracker
 
     def __init__(self):
         super().__init__()
 
         self.view = AttentionDetectorWidget()
         
-        self.timer = QTimer()
+        # Timer setup
+        self.timer = QTimer()   
+        self.timer.timeout.connect(self.update_frame) # Connect timeout signal to the update_frame method so the frame is updated automatically at each time interval
 
-        # self.view.start_pause_btn.clicked.connect(self.toggle_camera)
-        # self.view.stop_btn.clicked.connect(self.stop_camera)
-        self.timer.timeout.connect(self.update_frame)
+        # Load MediaPipe Face Landmarker and SVC model
+        self.detector = self._initialize_face_landmarker()
+        self.svc_model = self._load_svc_model()
 
+        # Session metadata
+        self.session_id = str(uuid.uuid4())
+        self._is_running = False
         self.start_time = None
         self.end_time = None
-        self.pause_intervals = []
-        self.current_pause_start_time= None
-        self.notification_times = []
-        self.session_id = str(uuid.uuid4())
-
-        # Video Capture
+        self.pause_intervals = [] # List of tuples (start_time, end_time) for each pause interval
+        self.current_pause_start_time= None # Start time of the current pause interval
+        self.notification_timestamps = [] # List of times when notifications were triggered
+        
+        # Webcam and frame processing
         self.cap = None
         self.actual_fps = DEFAULT_FPS
-        self.detector = self._initialize_face_landmarker()
-        self._is_running = False
-
+        self.frame_count = 0 # Counts the number of frames processed
+        
         # EAR Data and Classification Setup
         self.ear_values = deque(maxlen=NUMBER_OF_EAR) # Store the last N EAR values
         self.all_ear_values = [] # Stores all ear values
-        self.frame_count = 0
-        self.svc_model = self._load_svc_model()
         self.all_svc_predictions = [] # Stores all SVC prediction labels (e.g., 0, 1, 2)
-        self.svc_prediction_count = 0 # Counts how many SVC predictions made in current session
-        self.processed_until_svc_pred_index = 0
-        self.current_prediction = DEFAULT_PREDICTION_TEXT # Display status
-        self.ear_calculation_result_file = None # File to write EAR values
-        self.ear_classification_result_file = None 
-        self.looking_direction = ("LEFT", "UP")
+        self.last_svc_trigger_index = 0 # Index of the last processed SVC prediction that triggered a rule evaluation to avoid re-evaluating the same sequence
+        self.current_prediction = DEFAULT_PREDICTION_TEXT # Current eye state classification text for display
+        
+        # Default looking direction
+        self.current_looking_direction = ("LEFT", "UP") 
 
-        self.last_notification_time = datetime.min # Initialize to allow the first notification
-
-        # Ensure output directory exists
-        # os.makedirs(EAR_CALCULATION_RESULT_DIR, exist_ok=True)
-        # os.makedirs(EAR_CLASSIFICATION_RESULT_DIR, exist_ok=True)
-
-        self.timer.timeout.connect(self.update_frame)
-
+        # Initialize sound effect
+        self.drowsiness_notification_sound_effect = QSoundEffect(source=QUrl.fromLocalFile(resource_path("resources/audio/noti_sound_effect.wav")))
+        # Initialize the audio output and media player for sound effects
+        self.audio_output = QAudioOutput()
+        self.completion_notification_sound_player = QMediaPlayer()
+        self.completion_notification_sound_player.setAudioOutput(self.audio_output)
+        self.completion_notification_sound_player.setSource(QUrl.fromLocalFile(resource_path("resources/audio/completion_noti_sound_effect.wav")))
+    
     def _initialize_face_landmarker(self):
         """Initializes and returns the MediaPipe Face Landmarker."""
+
         try:
             base_options = mp_tasks.BaseOptions(model_asset_path=FACE_LANDMARKER_TASK_PATH)
             options = vision.FaceLandmarkerOptions(
@@ -106,6 +112,7 @@ class AttentionDetectorWidgetController(QObject):
 
     def _load_svc_model(self):
         """Loads the trained SVC model."""
+
         try:
             model = joblib.load(SVC_MODEL_PATH)
             return model
@@ -118,121 +125,105 @@ class AttentionDetectorWidgetController(QObject):
 
     def _reset_state(self):
         """Resets frame count, EAR values, prediction text, and drowsiness detection state."""
+        
+        # Frame processing
         self.frame_count = 0
-        self.ear_values.clear()
-        self.current_prediction = DEFAULT_PREDICTION_TEXT
-        self.all_svc_predictions.clear()
-        self.svc_prediction_count = 0
-        self.processed_until_svc_pred_index = 0
         self.actual_fps = DEFAULT_FPS 
-
+        
+        # Session metadata
+        self.session_id = str(uuid.uuid4())
         self.start_time = None
         self.end_time = None
-        self.pause_intervals = []
+        self.pause_intervals.clear()
         self.current_pause_start_time = None
-        self.notification_times = []
+        self.notification_timestamps.clear()
 
-        self.session_id = str(uuid.uuid4())
-        self.looking_direction = ("LEFT", "UP")
+        # EAR and SVC state
+        self.ear_values.clear()
+        self.all_ear_values.clear()
+        self.all_svc_predictions.clear()
+        self.last_svc_trigger_index = 0
+        self.current_prediction = DEFAULT_PREDICTION_TEXT
 
-    # def _open_ear_calculation_result_file(self, base_filename):
-    #     """Opens a new output file for EAR values, closing the previous one if open."""
-    #     # Close previous EAR output file.
-    #     if self.ear_calculation_result_file and not self.ear_calculation_result_file.closed:
-    #         self.ear_calculation_result_file.close()
-
-    #     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    #     output_path = os.path.join(EAR_CALCULATION_RESULT_DIR, f"{base_filename}_{timestamp}.txt")
-        
-    #     try:
-    #         self.ear_calculation_result_file = open(output_path, "w")
-    #     except Exception as e:
-    #         self.ear_calculation_result_file = None 
-    #         QMessageBox.warning(self, "Warning", f"Could not open EAR output file:\n{output_path}\n\n{e}")
-
-    # def _open_ear_classification_result_file(self, base_filename):
-    #     """Opens a new output file for classification results, closing the previous one if open."""
-    #     # Close previous classification result file.
-    #     if self.ear_classification_result_file and not self.ear_classification_result_file.closed:
-    #         self.ear_classification_result_file.close()
-
-    #     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    #     output_path = os.path.join(EAR_CLASSIFICATION_RESULT_DIR, f"{base_filename}_{timestamp}.txt")
-        
-    #     try:
-    #         self.ear_classification_result_file = open(output_path, "w")
-    #     except Exception as e:
-    #         self.ear_classification_result_file = None # Ensure it's None on failure
-    #         QMessageBox.warning(self, "Warning", f"Could not open classification result file:\n{output_path}\n\n{e}")
+        self.current_looking_direction = ("LEFT", "UP")
 
     def start_camera(self):
+        """Starts the camera and begins capturing frames."""
+
+        # If the camera is not initialized yet, i.e. the user just started the focus session, reset the state 
         if not self.cap:
             self._reset_state()
-            # self._open_ear_calculation_result_file("camera_capture")
-            # self._open_ear_classification_result_file("camera_capture")
             self.timer.setInterval(33)
             self.actual_fps = DEFAULT_FPS
-            self.start_time = datetime.now()
         
+        # Use the default camera
         self.cap = cv2.VideoCapture(0)
 
+        # Show error message if camera cannot be opened
         if not self.cap.isOpened():
             QMessageBox.critical(self.view, "Error", "Could not open default camera.")
             self.cap = None
             return
         
+        # If resuming from a pause within the same session, record the pause interval and reset the current_pause_start_time
         if self.current_pause_start_time:
             pause_end_time = datetime.now()
             self.pause_intervals.append((self.current_pause_start_time, pause_end_time))
             self.current_pause_start_time = None
+        # If starting a new session, set the start time
+        else:
+            self.start_time = datetime.now()
         
         self._is_running = True        
         self.timer.start()
 
     def stop_camera(self):
+        """Stops the camera and save session data."""
+
         if self.start_time:
+            self.end_time = datetime.now()
+
             self.timer.stop()
 
             self._is_running = False
             
-            self.end_time = datetime.now()
+            # Handle the situation where the user paused the camera before stopping
             if self.current_pause_start_time:
                 self.pause_intervals.append((self.current_pause_start_time, self.end_time))
+                self.current_pause_start_time = None
 
+            # Close the camera if it is open
             if self.cap:
                 self.cap.release()
                 self.cap = None
             
-            if self.ear_calculation_result_file and not self.ear_calculation_result_file.closed:
-                self.ear_calculation_result_file.close()
-                self.ear_calculation_result_file = None
-            if self.ear_classification_result_file and not self.ear_classification_result_file.closed:
-                self.ear_classification_result_file.close()
-                self.ear_classification_result_file = None
-            
-            self.view.camera_feed_label.clear() # Clear the video display
+            # Clear the camera feed label and reset the eye status label
+            self.view.camera_feed_label.clear() 
             self.view.camera_feed_label.setText("Click start to activate the attention detector 📷")
-            self.view.eye_status_label.setText("")
-            # self.view.start_pause_btn.setText("Start")
+            self.view.eye_status_label.setText(DEFAULT_PREDICTION_TEXT)
 
             self.is_stop.emit()
 
+            # Calculate and save session metrics and logs 
             session_metrics = self.create_session_metrics()
             session_log = self.create_session_log()
+
+            # Save session log and metrics to local database
             insert_session_to_local_db(session_log, session_metrics)
 
+            # Save session metrics to cloud database
             try:
                 insert_session_to_cloud_db_response = insert_session_to_cloud_db(session_metrics)
                 if insert_session_to_cloud_db_response['status'] != "success":
                     raise Exception
-            except ConnectionError as e:
+            except ConnectionError:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Warning)
                 msg.setWindowTitle("Connection Error")
                 msg.setText("You appear to be offline. The session data was not uploaded to the cloud.")
                 msg.setStandardButtons(QMessageBox.Ok)
                 msg.exec()
-            except Exception as e:
+            except Exception:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Warning)
                 msg.setWindowTitle("Unexpected Error")
@@ -243,24 +234,27 @@ class AttentionDetectorWidgetController(QObject):
             self._reset_state()
 
     def pause_camera(self):
+        """Pauses the camera and saves the current pause start time."""
+
         self.timer.stop()
-        self.cap.release()
         self.current_pause_start_time = datetime.now()
+        self.cap.release()
         self._is_running = False
 
     def toggle_camera(self):
+        """Toggles the camera state between running and paused."""
+        
         if self._is_running:
             self.pause_camera()
-            # self.view.start_pause_btn.setText("Start")
         else:
             self.start_camera()
-            # self.view.start_pause_btn.setText("Pause")
 
     def check_rule_1(self):
         """
         Checks for Rule 1 (5 consecutive long blinks) every time a new SVC prediction is made.
-        If triggered and notification shown, advances self.processed_until_svc_pred_index to prevent trigerring Rule 2 with the same sequence.
+        If triggered and notification shown, set last_trigger_svc_idx to prevent trigerring Rule 2 with the same sequence.
         """
+
         if len(self.all_svc_predictions) < RULE_1_NUMBER_OF_CONSECUTIVE_LONG_BLINKS:
             return
 
@@ -270,7 +264,7 @@ class AttentionDetectorWidgetController(QObject):
         sequence_start_idx = sequence_end_idx - RULE_1_NUMBER_OF_CONSECUTIVE_LONG_BLINKS + 1
 
         # Evaluate rule 1 only if this potential sequence starts at or after processed svc predictions
-        if sequence_start_idx < self.processed_until_svc_pred_index:
+        if sequence_start_idx < self.last_svc_trigger_index:
             return 
 
         # Check if the last RULE_1_NUMBER_OF_CONSECUTIVE_LONG_BLINKS are all '2'
@@ -280,126 +274,133 @@ class AttentionDetectorWidgetController(QObject):
                 is_rule_1_triggered = False
                 break
 
-        # TODO: change rule trigger message and remove print statement
+        # If Rule 1 is triggered, show the notification and update the last trigger index
         if is_rule_1_triggered:
-            # rule_1_trigger_message = (f"Rule 1: Drowsiness inferred. {RULE_1_NUMBER_OF_CONSECUTIVE_LONG_BLINKS} "
-            #                  f"consecutive 'long blink' outputs detected, ending at prediction "
-            #                  f"#{sequence_end_idx + 1}.")
             rule_1_trigger_message = f"GOTCHA! Looks like you're losing focus.\nDon’t drift off yet! Stay in view and keep your eyes open." 
-            print(f"Rule 1 Condition Met: Sequence from {sequence_start_idx + 1} to {sequence_end_idx + 1}.")
-
             self.show_drowsiness_notification(rule_1_trigger_message)
-            self.processed_until_svc_pred_index = sequence_end_idx + 1
+            self.last_svc_trigger_index = sequence_end_idx + 1
 
     def check_rule_2(self):
-        """Check for rule 2 (proportion of long blinks (2) to total number of blinks) every RULE_2_EVALUATION_INTERVAL_SEC."""
+        """Check for rule 2 (proportion of long blinks (2) to total number of blinks (1, 2)) every RULE_2_EVALUATION_INTERVAL_SEC."""
+        
         if not self.all_svc_predictions:
             return
         
-        number_of_predictions_per_second = self.actual_fps / PREDICTION_INTERVAL_FRAME
+        predictions_per_sec = self.actual_fps / PREDICTION_INTERVAL_FRAME
         
-        rule_2_window_size = int(number_of_predictions_per_second * RULE_2_WINDOW_SEC)
+        rule_2_window_size = int(predictions_per_sec * RULE_2_WINDOW_SEC)
        
         # Get predictions from the last 60 seconds (or fewer if not enough history)
         sequence_start_idx = max(0, len(self.all_svc_predictions) - rule_2_window_size)
-        if sequence_start_idx < self.processed_until_svc_pred_index:
+        if sequence_start_idx < self.last_svc_trigger_index:
             return  # Skip if the sequence starts before the last processed index
+        
+        # Get the current window of predictions for Rule 2 evaluation
         current_window = self.all_svc_predictions[sequence_start_idx:]
-
         if len(current_window) < rule_2_window_size:
             return
-        
+
+        # Count the number of long blinks (2) and short blinks (1) in the current window            
         number_of_long_blinks = current_window.count(2)  
         number_of_short_blinks = current_window.count(1)
         total_blinks = number_of_long_blinks + number_of_short_blinks
 
-        # print(f"Rule 2 Eval: Window size={len(current_window)} preds. Long={number_of_long_blinks}, Short={number_of_short_blinks}, Total Blinks={total_blinks}")
-
+        # Trigger Rule 2 if the proportion of long blinks is greater than 25%
         if total_blinks > 0:
             proportion_long_blinks = number_of_long_blinks / total_blinks
-            # print(f"Rule 2 Eval: Proportion of long blinks = {proportion_long_blinks:.2f}")
             if proportion_long_blinks > 0.25:
-                self.processed_until_svc_pred_index = len(self.all_svc_predictions) 
+                self.last_svc_trigger_index = len(self.all_svc_predictions) 
                 self.show_drowsiness_notification(
                     f"👀 You're blinking slow... {proportion_long_blinks*100:.1f}% of your recent blinks were long. "
                     f"\nFeeling sleepy? Maybe stretch or grab a drink!"
                 )
     
     def update_frame(self):
+        """Capture a frame from the webcam, process it, and update the display."""
+
+        # Check if the camera is initialized and opened
         if self.cap is None or not self.cap.isOpened():
             return
         
+        # Read a frame from the camera
         ret, frame = self.cap.read()
         if not ret:
-            print("Cannot read frame.")
+            QMessageBox.critical(self.view, "Error", "Error processing live camera feed.")
             self.stop_camera()
             return
         
         self.frame_count += 1
+
+        # Convert the frame to RGB format for MediaPipe processing
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        # Convert the frame to MediaPipe Image format
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
 
         # MediaPipe Detection 
         try:
             detection_result = self.detector.detect(mp_image)
+            # Extract face landmarks from the detection result
             face_landmarks_list = detection_result.face_landmarks
         except Exception as e:
-             print(f"Error during face detection: {e}")
-             detection_result = None 
+            print(f"Error during face detection: {e}")
+            detection_result = None 
 
         image_height, image_width = frame.shape[:2]
-        annotated_image = frame_rgb 
+
+        # Initialize the annotated image as a copy of the original frame
+        annotated_image = np.copy(frame_rgb)
 
         average_ear = 0.0
         if detection_result and face_landmarks_list:
             annotated_image = draw_face_landmarks_on_image(frame_rgb, face_landmarks_list)
 
+            # Get the first face landmarks (only one face will be detected)
             face_landmarks = detection_result.face_landmarks[0]
 
-            l_corner, r_corner, l_gaze_points, r_gaze_points, l_gaze_point, r_gaze_point, avg_gaze_point, self.looking_direction = calculate_gaze(image_width, image_height, face_landmarks)
+            # Calculate the gaze direction
+            l_corner, r_corner, l_gaze_points, r_gaze_points, l_gaze_point, r_gaze_point, avg_gaze_point, self.current_looking_direction = calculate_gaze(image_width, image_height, face_landmarks)
             cv2.line(annotated_image, l_corner, tuple(np.ravel(l_gaze_points[2]).astype(np.int32)), (4, 191,191), 3)
             cv2.line(annotated_image, r_corner, tuple(np.ravel(r_gaze_points[2]).astype(np.int32)), (4, 191,191), 3)
-            # cv2.circle(annotated_image, avg_gaze_point, 10, (0, 255, 0), -1)  # Green circle for average gaze
-            # cv2.circle(annotated_image, avg_gaze_point, 15, (255, 255, 255), 2)  # White border
 
+            # Calculate EAR for both eyes if the coordinates are valid
             left_eye_coords = get_pixel_coords_from_landmarks(face_landmarks, LEFT_EYE_INDICES, image_width, image_height)
             right_eye_coords = get_pixel_coords_from_landmarks(face_landmarks, RIGHT_EYE_INDICES, image_width, image_height)
-            
             if len(left_eye_coords) == 6 and len(right_eye_coords) == 6:
                 left_ear = calculate_ear(left_eye_coords)
                 right_ear = calculate_ear(right_eye_coords)
                 average_ear = (left_ear + right_ear) / 2.0
 
-        # Store EAR value
+        # Store and update EAR value
         rounded_average_ear = round(average_ear, 5)
         self.ear_values.append(rounded_average_ear)
         self.all_ear_values.append(rounded_average_ear)
         self.latest_ear_value.emit(rounded_average_ear)
 
-        # Write EAR to file if open
-        # if self.ear_calculation_result_file and not self.ear_calculation_result_file.closed:
-        #     self.ear_calculation_result_file.write(f"{average_ear:.4f}\n")
+        # Make SVC prediction
+        if (self.svc_model is not None 
+            and len(self.ear_values) == NUMBER_OF_EAR 
+            and self.frame_count % PREDICTION_INTERVAL_FRAME == 0):
             
-        # SVC prediction
-        if (self.svc_model is not None and len(self.ear_values) == NUMBER_OF_EAR and self.frame_count % PREDICTION_INTERVAL_FRAME == 0):
-            # Prepare features: Convert deque to numpy array and reshape
-            ear_sample_array = np.array(list(self.ear_values)).reshape(1, -1) # Shape (1, 15)
-            
-            columns = [f"EAR {i + 1}" for i in range(NUMBER_OF_EAR)]
+            # Create a DataFrame for the SVC model
+            columns = [f"EAR {i + 1}" for i in range(NUMBER_OF_EAR)] # Create column names, e.g. "EAR 1" - "EAR 15"
+            # Convert deque to numpy array and reshape it into a 2D array for SVC prediction
+            ear_sample_array = np.array(list(self.ear_values)).reshape(1, -1) # Shape (1, 15), e.g. [[0.25, 0.30, ..., 0.28]]
             ear_sample_df = pd.DataFrame(ear_sample_array, columns=columns)
 
-            ear_classification_result = 0 # Default to a non-blink class
+            ear_classification_result = EYE_OPEN # Default classification result
 
             try:
                 # Predict using the loaded SVC model
                 prediction = self.svc_model.predict(ear_sample_df)
-                prediction_proba = self.svc_model.predict_proba(ear_sample_df) # Get probabilities
+                # prediction_proba = self.svc_model.predict_proba(ear_sample_df) 
 
-                # Update the display text (customize based on your class labels)
+                # Get and store the classification result
                 ear_classification_result = prediction[0]
-                confidence = np.max(prediction_proba) * 100
-                # self.current_prediction = f"Status: {ear_classification_result} ({confidence:.1f}%)"
+                self.all_svc_predictions.append(ear_classification_result)
 
+                # confidence = np.max(prediction_proba) * 100
+
+                # Set the current prediction text based on the classification result
                 match(ear_classification_result):
                     case 0:
                         self.current_prediction = f"Focused 👁️👁️"
@@ -407,50 +408,39 @@ class AttentionDetectorWidgetController(QObject):
                         self.current_prediction = f"Blinking 😌"
                     case 2:
                         self.current_prediction = f"Closed eye 💤"
-
-                # if self.ear_classification_result_file and not self.ear_classification_result_file.closed:
-                #     self.ear_classification_result_file.write(f"{ear_classification_result}\n")
-                
-                # Store prediction for
-                self.all_svc_predictions.append(ear_classification_result)
-                self.svc_prediction_count += 1
-
+                    case _:
+                        self.current_prediction = DEFAULT_PREDICTION_TEXT
+            
             except Exception as e:
                 print(f"Error during SVC prediction: {e}")
-                self.current_prediction = "Status: Prediction Error"
+                self.current_prediction = "Prediction Error"
 
             # Evaluate rules to determine drowsiness
             # Rule 1 is checked for every new svc prediction made
             self.check_rule_1()
 
             # Calculate the number of SVC predictions that should trigger rule 2 evaluation
-            number_of_predictions_per_second = self.actual_fps / PREDICTION_INTERVAL_FRAME
-            trigger_count_for_rule_2_eval = int(number_of_predictions_per_second * RULE_2_EVALUATION_INTERVAL_SEC)
+            predictions_per_second = self.actual_fps / PREDICTION_INTERVAL_FRAME # Number of svc predictions made per second
+            rule_2_eval_trigger_count = int(predictions_per_second * RULE_2_EVALUATION_INTERVAL_SEC) # Number of SVC predictions that should trigger rule 2 evaluation
             
-            if trigger_count_for_rule_2_eval > 0 \
-                and self.svc_prediction_count > 0 and \
-                (self.svc_prediction_count - self.processed_until_svc_pred_index) % trigger_count_for_rule_2_eval == 0:
+            if (rule_2_eval_trigger_count > 0 
+                and len(self.all_svc_predictions) > 0 
+                and (len(self.all_svc_predictions) - self.last_svc_trigger_index) % rule_2_eval_trigger_count == 0):
                 self.check_rule_2()
 
-        annotated_image = cv2.flip(annotated_image, 1)  # Flip the image horizontally for a mirror effect
-        # Display Frame and Prediction 
-        frame_bgr = cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR)
-
-        # Add the prediction text overlay onto the BGR frame
-        # cv2.putText(frame_bgr, self.current_prediction,
-        #             (10, 30), # Position (top-left corner)
-        #             cv2.FONT_HERSHEY_SIMPLEX, 1, # Font type and scale
-        #             (0, 255, 0) if "Error" not in self.current_prediction else (0, 0, 255), # Color (Green=OK, Red=Error)
-        #             2, cv2.LINE_AA) # Thickness and line type
-
+        # Flip the image horizontally for a mirror effect
+        annotated_image = cv2.flip(annotated_image, 1)  
+        
+        # Display prediction
         self.view.eye_status_label.setText(self.current_prediction)
 
+        # Display the annotated image with eye landmarks and gaze direction
+        frame_bgr = cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR)
         # Convert BGR frame to QImage for PySide6 display
         qt_image = QImage(
             frame_bgr.data, frame_bgr.shape[1], frame_bgr.shape[0],
             frame_bgr.strides[0], QImage.Format_BGR888
         )
-
         # Scale the QImage to fit the QLabel while keeping aspect ratio
         scaled_pixmap = QPixmap.fromImage(qt_image).scaled(
             self.view.camera_feed_label.size(),
@@ -463,50 +453,61 @@ class AttentionDetectorWidgetController(QObject):
         """Displays a drowsiness notification pop-up."""
 
         def handle_reenergize():
-            self.pause_intervals.append((self.notification_times[-1], datetime.now()))
+            """Handle the re-energize button click."""
+            # Record the notification pop up duration as a pause interval
+            self.pause_intervals.append((self.notification_timestamps[-1], datetime.now()))
+            # Pause the session
             self.toggle_camera()
-            sound.stop()
+            self.drowsiness_notification_sound_effect.stop()
             self.page_selected.emit("mind_energizer")
             dialog_box.close()
         
         def handle_continue():
+            """Handle the continue button click."""
             self.is_notification_end.emit()
-            self.pause_intervals.append((self.notification_times[-1], datetime.now()))
-            sound.stop()
+            # Record the notification pop up duration as a pause interval
+            self.pause_intervals.append((self.notification_timestamps[-1], datetime.now()))
+            self.drowsiness_notification_sound_effect.stop()
             dialog_box.close()
 
         def handle_stop():
-            self.pause_intervals.append((self.notification_times[-1], datetime.now()))
-            sound.stop()
+            """Handle the stop button click."""
+            # Record the notification pop up duration as a pause interval
+            self.pause_intervals.append((self.notification_timestamps[-1], datetime.now()))
+            self.drowsiness_notification_sound_effect.stop()
             dialog_box.close()
+            # Stop the camera only after a short delay to ensure the dialog box closes properly and prevent unexpected behavior
             QTimer.singleShot(0, self.stop_camera)
 
         self.is_notification_start.emit()
-        # TODO: change message
 
-        self.notification_times.append(datetime.now())
+        # Record the notification trigger time
+        self.notification_timestamps.append(datetime.now())
 
+        # Create the dialog box
         dialog_box = QDialog(self.view)
         dialog_box.setWindowTitle("Feeling sleepy?")
         dialog_box.setFixedSize(400, 200)
         dialog_box.setObjectName("notification")
 
+        # Create the noti message
         message_label = QLabel(message)
         message_label.setWordWrap(True)
         message_label.setObjectName("noti_message_label")
 
+        # Create the noti buttons and connect to handlers
         reenergize_btn = QPushButton("Re-energize")
-        continue_btn = QPushButton("Continue")
-        stop_btn = QPushButton("Stop")
         reenergize_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        continue_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        stop_btn.setCursor(QCursor(Qt.PointingHandCursor))
-        reenergize_btn.clicked.connect(handle_reenergize)
-        continue_btn.clicked.connect(handle_continue)
-        stop_btn.clicked.connect(handle_stop)
         reenergize_btn.setObjectName("noti_reenergize_btn")
+        reenergize_btn.clicked.connect(handle_reenergize)
+        continue_btn = QPushButton("Continue")
+        continue_btn.setCursor(QCursor(Qt.PointingHandCursor))
         continue_btn.setObjectName("noti_continue_btn")
+        continue_btn.clicked.connect(handle_continue)
+        stop_btn = QPushButton("Stop")
+        stop_btn.setCursor(QCursor(Qt.PointingHandCursor))
         stop_btn.setObjectName("noti_stop_btn")
+        stop_btn.clicked.connect(handle_stop)
 
         btns_holder = QWidget()
         btns_holder_layout = QHBoxLayout(btns_holder)
@@ -520,43 +521,68 @@ class AttentionDetectorWidgetController(QObject):
         dialog_box_layout.addStretch(1)
         dialog_box_layout.addWidget(btns_holder)
 
-        sound = QSoundEffect(source=QUrl.fromLocalFile(resource_path("resources/audio/noti_sound_effect.wav")))
-        sound.setVolume(1)
-        sound.play()
+        # Play the drowsiness notification sound until the user click a noti button
+        self.drowsiness_notification_sound_effect.setVolume(1)
+        self.drowsiness_notification_sound_effect.play()
 
         dialog_box.exec()
 
-    def show_completion_notification(message, duration_ms=3000, x=1000, y=50):
-        notif = QWidget()
-        notif.setWindowFlags(
+    def show_completion_notification(self, duration_ms=5000):
+        """Show a notification when the focus session is completed."""
+
+        # Determine the position of the notification based on the user's looking direction
+        # The position of the notification is always opposite to the user's looking direction
+        looking_direction = self.current_looking_direction
+        match (looking_direction):
+            case ("LEFT", "UP"):
+                # Notification is displayed at the bottom right corner
+                x = self.view.width() - 80
+                y = self.view.height() - 80
+            case ("LEFT", "DOWN"):
+                # Notification is displayed at the upper right corner
+                x = self.view.width() - 80
+                y = 40
+            case ("RIGHT", "UP"):
+                # Notification is displayed at the bottom left corner
+                x = 20
+                y = self.view.height() - 80
+            case ("RIGHT", "DOWN"):
+                # Notification is displayed at the upper left corner
+                x = 20
+                y = 40
+
+        # Create a notification widget        
+        self.notif = QWidget() 
+        self.notif.adjustSize()
+        self.notif.move(x, y)
+        layout = QVBoxLayout(self.notif)
+
+        # Ensure the notification is always shown on top of other windows
+        self.notif.setWindowFlags(
             Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
         )
-        notif.setAttribute(Qt.WA_TranslucentBackground)
-        notif.setAttribute(Qt.WA_ShowWithoutActivating)
+        # Set the background color of the widget to transparent
+        self.notif.setAttribute(Qt.WA_TranslucentBackground)
+        self.notif.setAttribute(Qt.WA_ShowWithoutActivating)
 
-        label = QLabel(message)
-        label.setStyleSheet("""
-            QLabel {
-                background-color: #222;
-                color: white;
-                padding: 12px 20px;
-                border-radius: 10px;
-                font-size: 14pt;
-            }
-        """)
-
-        layout = QVBoxLayout()
+        # Session completion message
+        label = QLabel("Focus session completed! 🎉")
+        label.setObjectName("completion_notification_label")
         layout.addWidget(label)
-        notif.setLayout(layout)
+        
+        self.notif.show()
 
-        notif.adjustSize()
-        notif.move(x, y)
-        notif.show()
+        # Set the audio setting and play the audio
+        self.audio_output.setVolume(0.1)
+        self.completion_notification_sound_player.setPosition(0)  # Play the audio from beginning
+        self.completion_notification_sound_player.play()
 
         # Automatically close the notification after a delay
-        QTimer.singleShot(duration_ms, notif.close)
+        QTimer.singleShot(duration_ms, lambda: (self.notif.close(), setattr(self, 'notif', None)))
     
     def create_session_log(self):
+        """Create and return a SessionLog data class object"""
+
         return SessionLog(
             session_id=self.session_id,
             svc_predictions=self.all_svc_predictions,
@@ -564,18 +590,18 @@ class AttentionDetectorWidgetController(QObject):
         )
     
     def create_session_metrics(self):
-        # first_notification_time = self.notification_times[0] if self.notification_times else datetime.max
-        first_pause_start_time = self.pause_intervals[0][0] if self.pause_intervals else datetime.max
-        # Choose the earliest of the two distraction times
-        # earliest_distracted_time = min(first_notification_time, first_pause_start_time)
-        earliest_distracted_time = first_pause_start_time
-        # If both were empty, fall back to end_time
-        if earliest_distracted_time == datetime.max:
-            earliest_distracted_time = self.end_time
+        """Calculate and return a SessionMetrics data class object"""
+
+        # Calculate attention span
+        # The earliest distracted time is the start of the first pause interval, or the end time if no pauses were recorded
+        earliest_distracted_time = self.pause_intervals[0][0] if self.pause_intervals else self.end_time
         attention_span = (earliest_distracted_time - self.start_time).total_seconds()
 
-        number_of_attention_loss = len(self.pause_intervals)
+        # Calculate frequency of unfocus, i.e. number of attention losses
+        # Frequency of unfocus is the number of pauses the user has taken and the number of times the notification was triggered
+        frequency_unfocus = len(self.pause_intervals)
 
+        # Calculate active and pause durations
         active_duration = self.end_time - self.start_time
         pause_duration = timedelta(0)
         for pause_start_time, pause_end_time in self.pause_intervals:
@@ -585,10 +611,13 @@ class AttentionDetectorWidgetController(QObject):
         active_duration = active_duration.total_seconds()
         pause_duration = pause_duration.total_seconds()
         
-        total_unfocus_duration_in_sec = self.all_svc_predictions.count(2) * PREDICTION_INTERVAL_FRAME * (1 / self.actual_fps) + pause_duration
+        # Calculate total unfocus duration, i.e. when the user close their eyes or look away and pause the session
+        total_unfocus_duration_in_sec = self.all_svc_predictions.count(EYE_CLOSED) * PREDICTION_INTERVAL_FRAME * (1 / self.actual_fps) + pause_duration
         
-        total_focus_duration_in_sec = self.all_svc_predictions.count(0) * PREDICTION_INTERVAL_FRAME * (1 / self.actual_fps)
+        # Calculate the total focus duration, i.e. when the user has their eyes open 
+        total_focus_duration_in_sec = self.all_svc_predictions.count(EYE_OPEN) * PREDICTION_INTERVAL_FRAME * (1 / self.actual_fps)
         
+        # Create the LoginSession singleton instance to get user information
         login_session = LoginSession()
         user_id = login_session.get_user_id()
         username = login_session.get_username()
@@ -602,12 +631,9 @@ class AttentionDetectorWidgetController(QObject):
             active_duration=active_duration,
             pause_duration=pause_duration,
             attention_span=attention_span,
-            frequency_unfocus=number_of_attention_loss,
+            frequency_unfocus=frequency_unfocus,
             focus_duration=total_focus_duration_in_sec,
             unfocus_duration=total_unfocus_duration_in_sec
         )
 
-
-
-        
 

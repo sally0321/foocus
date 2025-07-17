@@ -522,7 +522,7 @@ QLabel[role="attention_span_label"]{
     color: white;
     padding: 12px 20px;
     border-radius: 5px;
-    font-size: 15px;
+    font-size: 18px;
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #005163, stop: 1 #037f8c);
 }
 
