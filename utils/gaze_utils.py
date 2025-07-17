@@ -98,21 +98,12 @@ def calculate_gaze(img_w, img_h, face_landmarks):
                             [0, focal_length, img_w / 2],
                             [0, 0, 1]])
 
-    # Distortion coefficients 
+    # Distortion coefficients (assume webcam has only little distortion, hence set the value to zero)
     dist_coeffs = np.zeros((4, 1), dtype=np.float64)
 
-    # Solve PnP
+    # Solve PnP to get rotational vector and translational vector
     _, l_rvec, l_tvec = cv2.solvePnP(leye_3d, face_2d_head, cam_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
     _, r_rvec, r_tvec = cv2.solvePnP(reye_3d, face_2d_head, cam_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
-
-    # Adjust headpose vector with gaze vector
-    l_gaze_rvec = np.array(l_rvec)
-    l_gaze_rvec[2][0] -= final_left_gaze_vector[0]
-    l_gaze_rvec[0][0] += final_left_gaze_vector[1]
-   
-    r_gaze_rvec = np.array(r_rvec)
-    r_gaze_rvec[2][0] -= final_right_gaze_vector[0]
-    r_gaze_rvec[0][0] += final_right_gaze_vector[1]
 
     # Create 3D eye gaze vector 
     left_gaze_3d = np.array([
@@ -127,11 +118,12 @@ def calculate_gaze(img_w, img_h, face_landmarks):
         [final_right_gaze_vector[0] * 1.5, final_right_gaze_vector[1] * 1.5, 500]
     ], dtype=np.float32)
     
-    # Project the actual gaze vectors
+    # Project the 3D gaze vectors onto 2D image, to get the 2D pixel coords of each 3D points
+    # Pass in rvec and tvec to take the rotational and translational vector of the eye into consideration (e.g. when user turns their head)
     l_gaze_points, _ = cv2.projectPoints(left_gaze_3d, l_rvec, l_tvec, cam_matrix, dist_coeffs)
     r_gaze_points, _ = cv2.projectPoints(right_gaze_3d, r_rvec, r_tvec, cam_matrix, dist_coeffs)
     
-    # Get medium distance points
+    # Get medium points
     l_gaze_point = tuple(np.ravel(l_gaze_points[1]).astype(np.int32))  
     r_gaze_point = tuple(np.ravel(r_gaze_points[1]).astype(np.int32))  
    
