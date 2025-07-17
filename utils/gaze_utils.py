@@ -1,32 +1,17 @@
 import cv2
-import mediapipe as mp
 import numpy as np
 
 # Gaze Score multiplier (Higher = more sensitive to eye movement)
-# - Too high: Jittery, overshoots
-# - Too low: Not responsive enough
+# Too high: Jittery, overshoots
+# Too low: Not responsive enough
 x_score_multiplier = 15   # Horizontal gaze sensitivity 
 y_score_multiplier = 5   # Vertical gaze sensitivity 
-
-# Smoothing threshold (Lower = more responsive, Higher = more stable)
-threshold = 0.08
-
-# Distance to project gaze points 
-# Closer = more accurate for near objects, Further = better for distant estimation
-gaze_projection_distance = 400 
 
 # Camera calibration adjustments (0.8-1.5)
 focal_length_multiplier = 1.0   
 
-# Gaze offset corrections
-x_offset_correction = 0         # Horizontal offset in pixels (-50 to +50)
-y_offset_correction = 0         # Vertical offset in pixels (-50 to +50)
-
-# Advanced smoothing (exponential moving average)
-# lower = more responsiveness 
-smoothing_factor = 0.5          
-
-iris_sensitivity_multiplier = 3.5  # Additional multiplier for iris movement
+# Iris movement adjustment
+iris_sensitivity_multiplier = 3.5 
 
 # 3D model points centered at left eye
 leye_3d = np.array([
