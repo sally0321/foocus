@@ -5,7 +5,7 @@ import uuid
 from PySide6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget,  QMessageBox, QDialog, QHBoxLayout
 from PySide6.QtCore import QTimer, Qt, QObject, Signal, QUrl
 from PySide6.QtMultimedia import QSoundEffect, QMediaPlayer, QAudioOutput
-from PySide6.QtGui import QImage, QPixmap, QCursor
+from PySide6.QtGui import QImage, QPixmap, QCursor, QGuiApplication
 import mediapipe as mp
 from mediapipe.tasks import python as mp_tasks
 from mediapipe.tasks.python import vision
@@ -358,9 +358,9 @@ class AttentionDetectorWidgetController(QObject):
             face_landmarks = detection_result.face_landmarks[0]
 
             # Calculate the gaze direction
-            l_corner, r_corner, l_gaze_points, r_gaze_points, l_gaze_point, r_gaze_point, avg_gaze_point, self.current_looking_direction = calculate_gaze(image_width, image_height, face_landmarks)
-            cv2.line(annotated_image, l_corner, tuple(np.ravel(l_gaze_points[2]).astype(np.int32)), (4, 191,191), 3)
-            cv2.line(annotated_image, r_corner, tuple(np.ravel(r_gaze_points[2]).astype(np.int32)), (4, 191,191), 3)
+            l_corner, r_corner, l_gaze_point, r_gaze_point, self.current_looking_direction = calculate_gaze(image_width, image_height, face_landmarks)
+            cv2.line(annotated_image, l_corner, l_gaze_point, (4, 191,191), 3)
+            cv2.line(annotated_image, r_corner, r_gaze_point, (4, 191,191), 3)
 
             # Calculate EAR for both eyes if the coordinates are valid
             left_eye_coords = get_pixel_coords_from_landmarks(face_landmarks, LEFT_EYE_INDICES, image_width, image_height)
@@ -530,26 +530,31 @@ class AttentionDetectorWidgetController(QObject):
     def show_completion_notification(self, duration_ms=5000):
         """Show a notification when the focus session is completed."""
 
+        screen = QGuiApplication.primaryScreen()
+        geometry = screen.availableGeometry()
+        screen_width = geometry.width()
+        screen_height = geometry.height()
+
         # Determine the position of the notification based on the user's looking direction
         # The position of the notification is always opposite to the user's looking direction
         looking_direction = self.current_looking_direction
         match (looking_direction):
             case ("LEFT", "UP"):
                 # Notification is displayed at the bottom right corner
-                x = self.view.width() - 80
-                y = self.view.height() - 80
+                x = screen_width - 320
+                y = screen_height - 100
             case ("LEFT", "DOWN"):
                 # Notification is displayed at the upper right corner
-                x = self.view.width() - 80
-                y = 40
+                x = screen_width - 320
+                y = 30
             case ("RIGHT", "UP"):
                 # Notification is displayed at the bottom left corner
-                x = 20
-                y = self.view.height() - 80
+                x = 10
+                y = screen_height - 100
             case ("RIGHT", "DOWN"):
                 # Notification is displayed at the upper left corner
-                x = 20
-                y = 40
+                x = 10
+                y = 30
 
         # Create a notification widget        
         self.notif = QWidget() 

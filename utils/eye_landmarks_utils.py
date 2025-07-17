@@ -8,6 +8,7 @@ RIGHT_EYE_INDICES = [362, 385, 387, 263, 373, 380]
 def get_pixel_coords_from_landmarks(landmarks, indices, image_width, image_height):
     """ Gets pixel coordinates for specific landmark indices"""
     
+    # Multiply the normalized landmarks (0 - 1) with image width and image height to get actual pixal coords
     return [(int(landmarks[i].x * image_width), int(landmarks[i].y * image_height))
             for i in indices if 0 <= i < len(landmarks)] 
 
@@ -45,45 +46,19 @@ def draw_face_landmarks_on_image(rgb_image, face_landmarks_list):
 
     annotated_image = np.copy(rgb_image)
 
-    # Loop over each detected face's landmarks
+    # Loop over each detected face's landmarks (there will only be one face landmarks as the num faces detected is set to 1)
     for face_landmarks in face_landmarks_list:
-        # Convert landmarks into a NormalizedLandmarkList protobuf (MediaPipe format)
-        face_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
-        face_landmarks_proto.landmark.extend([
-            landmark_pb2.NormalizedLandmark(x=landmark.x, y=landmark.y, z=landmark.z) for landmark in face_landmarks
-        ])
-
-        # Extract landmarks for the left and right eyes using predefined indices
-        left_eye_landmarks_proto = landmark_pb2.NormalizedLandmarkList(
-            landmark=[face_landmarks_proto.landmark[i] for i in LEFT_EYE_INDICES]
-        )
-        right_eye_landmarks_proto = landmark_pb2.NormalizedLandmarkList(
-            landmark=[face_landmarks_proto.landmark[i] for i in RIGHT_EYE_INDICES]
+        # Create the protocol buffer for eye landmarks (MediaPipe message format) to pass to the MediaPipe drawing API
+        eye_landmarks_proto = landmark_pb2.NormalizedLandmarkList(
+            landmark=[landmark_pb2.NormalizedLandmark(x=face_landmarks[i].x, y=face_landmarks[i].y, z=face_landmarks[i].z) for i in [*LEFT_EYE_INDICES, *RIGHT_EYE_INDICES]]
         )
 
-        # Draw left eye
         solutions.drawing_utils.draw_landmarks(
             image=annotated_image,
-            landmark_list=left_eye_landmarks_proto,
-            connections=None, 
-            landmark_drawing_spec=solutions.drawing_utils.DrawingSpec(color=(147, 219, 224), thickness=1, circle_radius=1),
-            connection_drawing_spec=solutions.drawing_utils.DrawingSpec(color=(147, 219, 224), thickness=1)
-        )
-
-        # Draw right eye
-        solutions.drawing_utils.draw_landmarks(
-            image=annotated_image,
-            landmark_list=right_eye_landmarks_proto,
+            landmark_list=eye_landmarks_proto,
             connections=None, 
             landmark_drawing_spec=solutions.drawing_utils.DrawingSpec(color=(147, 219, 224), thickness=1, circle_radius=1),
             connection_drawing_spec=solutions.drawing_utils.DrawingSpec(color=(147, 219, 224), thickness=1)
         )
 
     return annotated_image
-
-
-
-
-
-
-
