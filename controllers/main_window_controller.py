@@ -80,8 +80,6 @@ class MainWindowController(QObject):
 
         content_page = self.main_window.content_pages.get(content_page_name)
         if content_page:
-            # Save page navigation history
-            self.visited_content_pages.append(content_page_name)
             # Rest the timer if available on the content page
             self.reset_timer_if_available(content_page)
             
@@ -111,6 +109,8 @@ class MainWindowController(QObject):
             self.switch_app_page(page_name)
         elif self.main_window.content_pages.get(page_name):
             self.switch_content_page(page_name)
+            # Save page navigation history
+            self.visited_content_pages.append(page_name)
 
     def bring_window_to_front(self):
         """Brings the main window to the front of all other running apps and gives it focus."""
