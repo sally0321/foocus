@@ -57,5 +57,6 @@ class SignInPageController(QObject):
         # Clear the input fields after successful sign-in
         self.view.username_input.clear()
         self.view.password_input.clear()
-        self.view.password_confirmation_input.clear()        
+        self.view.password_confirmation_input.clear()
+        self.view.error_message_label.clear()        
 
